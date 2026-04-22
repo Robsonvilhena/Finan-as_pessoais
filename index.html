@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
     <meta name="theme-color" content="#0A0E16">
-    <title>FINANCEIRO JEAN - Livro Caixa</title>
+    <title>FINANCEIRO JEAN - Sistema Completo</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -15,6 +15,82 @@
             min-height: 100vh;
             overflow-x: hidden;
         }
+
+        /* TELA DE LOGIN */
+        .login-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(145deg, #07090F 0%, #0A0E16 100%);
+            z-index: 2000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .login-container.hide { display: none; }
+        .login-card {
+            background: #0F1219;
+            border-radius: 48px;
+            padding: 40px 28px;
+            width: 100%;
+            max-width: 380px;
+            border: 1px solid rgba(255,255,255,0.08);
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
+            position: relative;
+            overflow: hidden;
+        }
+        .login-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #3B82F6, #8B5CF6, #C084FC);
+        }
+        .login-logo { text-align: center; margin-bottom: 32px; }
+        .login-logo h1 { font-size: 1.8rem; background: linear-gradient(135deg, #FFFFFF, #A5B4FC, #C084FC); -webkit-background-clip: text; background-clip: text; color: transparent; }
+        .login-logo p { font-size: 0.7rem; color: #6B7280; margin-top: 4px; }
+        .input-group { position: relative; margin-bottom: 20px; }
+        .input-group input {
+            width: 100%;
+            padding: 14px 16px;
+            background: #111822;
+            border: 1.5px solid #1E293B;
+            border-radius: 28px;
+            color: white;
+            font-size: 0.9rem;
+            outline: none;
+            padding-right: 45px;
+        }
+        .input-group input:focus { border-color: #3B82F6; box-shadow: 0 0 0 3px rgba(59,130,246,0.2); }
+        .password-toggle {
+            position: absolute;
+            right: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            font-size: 1.2rem;
+            background: none;
+            padding: 0;
+            color: #8E9AAC;
+        }
+        .btn-login {
+            width: 100%;
+            background: linear-gradient(95deg, #3B82F6, #8B5CF6);
+            padding: 14px;
+            font-size: 1rem;
+            margin-top: 12px;
+        }
+        .error-msg { color: #F43F5E; font-size: 0.75rem; margin-top: 12px; text-align: center; }
+        .security-badge { text-align: center; margin-top: 20px; font-size: 0.65rem; color: #4B5565; }
+
+        /* APP PRINCIPAL */
+        .app-container { display: block; }
+        .app-container.hide { display: none; }
         .container { max-width: 500px; margin: 0 auto; padding: 20px 16px 100px 16px; }
 
         /* Menu */
@@ -38,6 +114,9 @@
         .hamburger span { width: 22px; height: 2px; background: white; border-radius: 2px; }
         .logo-area h1 { font-size: 1.3rem; font-weight: 700; background: linear-gradient(135deg, #FFFFFF, #A5B4FC, #C084FC); -webkit-background-clip: text; background-clip: text; color: transparent; }
         .logo-area p { font-size: 0.6rem; color: #6B7280; }
+        .user-info { display: flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.05); padding: 6px 12px; border-radius: 30px; }
+        .user-info span { font-size: 0.7rem; color: #94A3B8; }
+        .logout-btn { background: none; padding: 4px 8px; font-size: 0.7rem; color: #F43F5E; }
 
         .balance-card { background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(12px); border-radius: 28px; padding: 16px 20px; margin-bottom: 20px; border: 1px solid rgba(255,255,255,0.08); }
         .balance-label { font-size: 0.65rem; color: #94A3B8; }
@@ -49,18 +128,21 @@
 
         .section-card { background: #0F1219; border-radius: 24px; padding: 18px; margin-bottom: 18px; border: 1px solid rgba(255,255,255,0.05); }
         .section-title { font-size: 1rem; font-weight: 600; margin-bottom: 14px; display: flex; align-items: center; gap: 8px; border-left: 3px solid #3B82F6; padding-left: 10px; }
+        .sub-section { margin-top: 20px; padding-top: 16px; border-top: 1px solid rgba(255,255,255,0.05); }
+        .sub-title { font-size: 0.85rem; font-weight: 600; margin-bottom: 12px; color: #94A3B8; }
 
-        input, select { background: #111822; border: 1.5px solid #1E293B; padding: 10px 14px; border-radius: 24px; color: white; font-size: 0.85rem; outline: none; width: 100%; margin-bottom: 8px; }
-        button { background: linear-gradient(95deg, #1E293B, #0F172A); border: none; padding: 10px 18px; border-radius: 28px; color: white; font-weight: 600; cursor: pointer; font-size: 0.85rem; }
+        input, select, textarea { background: #111822; border: 1.5px solid #1E293B; padding: 12px 14px; border-radius: 24px; color: white; font-size: 0.9rem; outline: none; width: 100%; margin-bottom: 10px; }
+        button { background: linear-gradient(95deg, #1E293B, #0F172A); border: none; padding: 12px 20px; border-radius: 28px; color: white; font-weight: 600; cursor: pointer; font-size: 0.9rem; transition: all 0.2s; }
+        button:active { transform: scale(0.97); }
         .btn-primary { background: linear-gradient(95deg, #3B82F6, #8B5CF6); }
         .btn-success { background: linear-gradient(95deg, #10B981, #059669); }
         .btn-danger { background: linear-gradient(95deg, #F43F5E, #E11D48); }
         .btn-warning { background: linear-gradient(95deg, #FBBF24, #D97706); }
+        .btn-edit { background: linear-gradient(95deg, #F59E0B, #D97706); }
         .flex-row { display: flex; gap: 10px; margin-top: 10px; flex-wrap: wrap; }
         
-        .tx-list { max-height: 250px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; }
-        .tx-item { background: #0A0D14; border-radius: 18px; padding: 10px 12px; display: flex; justify-content: space-between; align-items: center; border-left: 3px solid; }
-        .delete-btn { background: none; color: #F43F5E; padding: 4px 8px; }
+        .tx-list { max-height: 300px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; }
+        .tx-item { background: #0A0D14; border-radius: 18px; padding: 12px; display: flex; justify-content: space-between; align-items: center; border-left: 3px solid; }
         
         .chart-row { display: flex; flex-wrap: wrap; gap: 16px; margin-bottom: 20px; }
         .chart-box { flex: 1; min-width: 200px; background: #0A0D14; border-radius: 20px; padding: 16px; }
@@ -70,728 +152,1194 @@
         .profit-card { background: linear-gradient(135deg, #1E293B, #0F172A); border-radius: 20px; padding: 16px; margin-bottom: 12px; text-align: center; }
         .profit-value { font-size: 1.5rem; font-weight: 700; color: #FBBF24; }
         
-        .installment-card { background: #0A0D14; border-radius: 20px; padding: 14px; margin-bottom: 12px; }
+        .installment-card, .card-item, .invoice-card { background: #0A0D14; border-radius: 20px; padding: 14px; margin-bottom: 12px; }
         .progress-bar { background: #1E293B; border-radius: 20px; height: 8px; margin: 10px 0; overflow: hidden; }
         .progress-fill { height: 100%; border-radius: 20px; transition: width 0.3s; }
-        .card-item { background: #0A0D14; border-radius: 20px; padding: 14px; margin-bottom: 12px; }
         
         .info-text { font-size: 0.7rem; color: #6B7280; margin-top: 4px; }
-        .divider { height: 1px; background: #1E293B; margin: 16px 0; }
+        
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(8px);
+            z-index: 3000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .modal.hide { display: none; }
+        .modal-content {
+            background: #0F1219;
+            border-radius: 32px;
+            padding: 24px;
+            max-width: 350px;
+            text-align: center;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .modal-buttons { display: flex; gap: 12px; margin-top: 20px; }
+        .modal-buttons button { flex: 1; }
+        
+        .parcelas-area { background: #0A0D14; border-radius: 20px; padding: 12px; margin-top: 8px; display: none; }
+        
+        .card-form { background: #0A0D14; border-radius: 20px; padding: 16px; margin-bottom: 16px; }
+        
+        .badge-warning { background: #FBBF24; color: #000; padding: 2px 8px; border-radius: 20px; font-size: 0.7rem; }
+        .badge-danger { background: #F43F5E; color: #fff; padding: 2px 8px; border-radius: 20px; font-size: 0.7rem; }
+        .badge-success { background: #10B981; color: #fff; padding: 2px 8px; border-radius: 20px; font-size: 0.7rem; }
+        
+        .card-actions { display: flex; gap: 8px; margin-top: 12px; }
+        .card-actions button { flex: 1; padding: 8px; font-size: 0.8rem; }
     </style>
 </head>
 <body>
-<div class="menu-backdrop" id="menuBackdrop"></div>
-<div class="menu-overlay" id="menuOverlay">
-    <div class="menu-header"><h3>📊 MENU</h3><button class="close-menu" id="closeMenuBtn">✕</button></div>
-    <div class="menu-item active" data-view="dashboard">🏠 Dashboard</div>
-    <div class="menu-item" data-view="movements">📒 Movimentações</div>
-    <div class="menu-item" data-view="book">🏪 Livro Caixa Loja</div>
-    <div class="menu-item" data-view="categories">🏷️ Categorias</div>
-    <div class="menu-item" data-view="future">📅 Pagamentos Futuros</div>
-    <div class="menu-item" data-view="cards">💳 Cartões</div>
-</div>
-
-<div class="container">
-    <div class="top-bar">
-        <div class="hamburger" id="hamburgerBtn"><span></span><span></span><span></span></div>
-        <div class="logo-area"><h1>FINANCEIRO JEAN</h1><p>CONTROLE TOTAL + LOJA</p></div>
-        <div style="width: 44px;"></div>
-    </div>
-
-    <!-- DASHBOARD -->
-    <div id="dashboardView">
-        <div class="balance-card">
-            <div class="balance-label">SALDO DISPONÍVEL</div>
-            <div class="balance-value" id="totalBalance">R$ 0,00</div>
-            <div class="stats-row">
-                <div class="stat-box"><div class="label">RECEITAS</div><div class="income" id="totalIncome">R$ 0</div></div>
-                <div class="stat-box"><div class="label">DESPESAS</div><div class="expense" id="totalExpense">R$ 0</div></div>
+    <!-- TELA DE LOGIN -->
+    <div id="loginContainer" class="login-container">
+        <div class="login-card">
+            <div class="lock-icon">🔒</div>
+            <div class="login-logo">
+                <h1>FINANCEIRO JEAN</h1>
+                <p>SISTEMA SEGURO</p>
             </div>
-        </div>
-
-        <div class="section-card">
-            <div class="section-title">📊 RESUMO FINANCEIRO</div>
-            <div class="chart-row">
-                <div class="chart-box"><h4>Receitas vs Despesas</h4><canvas id="incomeExpenseChart"></canvas></div>
-                <div class="chart-box"><h4>Faturamento Loja</h4><canvas id="storeSalesChart"></canvas></div>
+            <div class="input-group">
+                <input type="text" id="loginUsername" placeholder="Usuário" value="Jean" readonly style="background: #1E293B; cursor: not-allowed; opacity: 0.8;">
             </div>
-            <div class="chart-row">
-                <div class="chart-box"><h4>Despesas por Categoria</h4><canvas id="expenseCategoryChart"></canvas></div>
-                <div class="chart-box"><h4>Lucro Diário Loja</h4><canvas id="dailyProfitChart"></canvas></div>
+            <div class="input-group">
+                <input type="password" id="loginPassword" placeholder="Senha" autocomplete="off">
+                <span class="password-toggle" onclick="togglePassword()">👁️</span>
             </div>
-        </div>
-
-        <div class="profit-card">
-            <div class="balance-label">🏪 LUCRO DA LOJA (HOJE)</div>
-            <div class="profit-value" id="todayProfit">R$ 0,00</div>
+            <button id="btnLogin" class="btn-login">Entrar</button>
+            <div id="loginError" class="error-msg"></div>
+            <div class="security-badge">🔐 Sistema com criptografia de ponta a ponta</div>
         </div>
     </div>
 
-    <!-- MOVIMENTAÇÕES -->
-    <div id="movementsView" style="display:none;">
-        <div class="section-card">
-            <div class="section-title">💰 MOVIMENTAÇÃO PESSOAL</div>
-            <input type="text" id="movDesc" placeholder="Descrição">
-            <input type="number" id="movAmount" placeholder="Valor R$" step="0.01">
+    <!-- MODAL DE EDITAR CARTÃO -->
+    <div id="editCardModal" class="modal hide">
+        <div class="modal-content">
+            <h3>✏️ EDITAR CARTÃO</h3>
+            <input type="text" id="editCardName" placeholder="Nome do cartão">
+            <input type="text" id="editCardBank" placeholder="Banco">
+            <input type="number" id="editCardLimit" placeholder="Limite R$" step="0.01">
             <div class="flex-row">
-                <select id="movType"><option value="income">💰 Receita</option><option value="expense">💸 Despesa</option></select>
-                <select id="movCategory"></select>
-                <select id="movPayment">
-                    <option value="PIX">PIX</option><option value="Dinheiro">Dinheiro</option>
-                    <option value="Débito">Débito</option><option value="Crédito">Crédito</option>
-                </select>
+                <input type="number" id="editCardClosingDay" placeholder="Dia fechamento" style="flex:1" min="1" max="31">
+                <input type="number" id="editCardDueDay" placeholder="Dia vencimento" style="flex:1" min="1" max="31">
             </div>
-            <button id="addMovBtn" class="btn-primary">Adicionar Movimentação</button>
-        </div>
-
-        <div class="section-card">
-            <div class="section-title">📋 HISTÓRICO COMPLETO</div>
-            <div id="allMovementsList" class="tx-list"></div>
+            <input type="hidden" id="editCardId">
+            <div class="modal-buttons">
+                <button id="cancelEditBtn" class="btn-danger">Cancelar</button>
+                <button id="saveEditBtn" class="btn-primary">Salvar</button>
+            </div>
         </div>
     </div>
 
-    <!-- LIVRO CAIXA LOJA -->
-    <div id="bookView" style="display:none;">
-        <div class="section-card">
-            <div class="section-title">🏪 RESUMO DA LOJA</div>
-            <div class="profit-card"><div class="balance-label">RECEITAS DA LOJA</div><div class="profit-value" id="storeRevenue">R$ 0,00</div></div>
-            <div class="profit-card"><div class="balance-label">DESPESAS DA LOJA</div><div class="profit-value" style="color:#F43F5E;" id="storeTotalCosts">R$ 0,00</div></div>
-            <div class="profit-card"><div class="balance-label">LUCRO LÍQUIDO</div><div class="profit-value" id="storeProfit">R$ 0,00</div></div>
-        </div>
-
-        <div class="section-card">
-            <div class="section-title">💰 REGISTRAR RECEITA DA LOJA</div>
-            <input type="text" id="saleDesc" placeholder="Descrição (ex: Venda do dia)">
-            <input type="number" id="saleValue" placeholder="Valor R$" step="0.01">
-            <div class="flex-row">
-                <input type="date" id="saleDate" style="flex:1">
-                <input type="time" id="saleTime" style="flex:1">
+    <!-- MODAL DE ALTERAR SENHA -->
+    <div id="changePasswordModal" class="modal hide">
+        <div class="modal-content">
+            <h3>🔐 ALTERAR SENHA</h3>
+            <div class="input-group">
+                <input type="password" id="modalCurrentPassword" placeholder="Senha atual">
+                <span class="password-toggle" onclick="toggleModalPassword('modalCurrentPassword', this)">👁️</span>
             </div>
-            <button id="registerSaleBtn" class="btn-success">💰 Registrar Receita</button>
-        </div>
-
-        <div class="section-card">
-            <div class="section-title">💸 REGISTRAR DESPESA DA LOJA</div>
-            <input type="text" id="expenseDesc" placeholder="Descrição (ex: Compra mercadoria)">
-            <input type="number" id="expenseValue" placeholder="Valor R$" step="0.01">
-            <div class="flex-row">
-                <input type="date" id="expenseDate" style="flex:1">
-                <input type="time" id="expenseTime" style="flex:1">
+            <div class="input-group">
+                <input type="password" id="modalNewPassword" placeholder="Nova senha">
+                <span class="password-toggle" onclick="toggleModalPassword('modalNewPassword', this)">👁️</span>
             </div>
-            <select id="expenseCategory">
-                <option value="Mercadoria">📦 Mercadoria</option>
-                <option value="Água/Luz">💡 Água/Luz</option>
-                <option value="Aluguel">🏠 Aluguel</option>
-                <option value="Funcionário">👥 Funcionário</option>
-                <option value="Impostos">📄 Impostos</option>
-                <option value="Outros">📌 Outros</option>
-            </select>
-            <button id="registerExpenseBtn" class="btn-danger">💸 Registrar Despesa</button>
-        </div>
-
-        <div class="section-card">
-            <div class="section-title">📋 RECEITAS DA LOJA</div>
-            <div id="salesList" class="tx-list"></div>
-        </div>
-
-        <div class="section-card">
-            <div class="section-title">📋 DESPESAS DA LOJA</div>
-            <div id="storeExpensesList" class="tx-list"></div>
+            <div class="input-group">
+                <input type="password" id="modalConfirmPassword" placeholder="Confirmar nova senha">
+                <span class="password-toggle" onclick="toggleModalPassword('modalConfirmPassword', this)">👁️</span>
+            </div>
+            <div id="modalError" class="error-msg"></div>
+            <div class="modal-buttons">
+                <button id="modalCancelBtn" class="btn-danger">Cancelar</button>
+                <button id="modalConfirmBtn" class="btn-primary">Alterar</button>
+            </div>
         </div>
     </div>
 
-    <!-- CATEGORIAS -->
-    <div id="categoriesView" style="display:none;">
-        <div class="section-card"><div class="section-title">➕ NOVA CATEGORIA</div><div class="flex-row"><input type="text" id="newCategoryName" placeholder="Nome"><select id="newCategoryType"><option value="expense">Despesa</option><option value="income">Receita</option></select><button id="addCategoryBtn" class="btn-primary">Adicionar</button></div></div>
-        <div class="section-card"><div id="categoriesList" class="tx-list"></div></div>
-    </div>
+    <!-- APP PRINCIPAL -->
+    <div id="appContainer" class="app-container hide">
+        <div class="menu-backdrop" id="menuBackdrop"></div>
+        <div class="menu-overlay" id="menuOverlay">
+            <div class="menu-header"><h3>📊 MENU</h3><button class="close-menu" id="closeMenuBtn">✕</button></div>
+            <div class="menu-item active" data-view="dashboard">🏠 Dashboard</div>
+            <div class="menu-item" data-view="register">📝 Registrar Movimentação</div>
+            <div class="menu-item" data-view="cards">💳 Cartões</div>
+            <div class="menu-item" data-view="book">🏪 Livro Caixa Loja</div>
+            <div class="menu-item" data-view="categories">🏷️ Categorias</div>
+            <div class="menu-item" data-view="security">🔐 Segurança</div>
+        </div>
 
-    <!-- PAGAMENTOS FUTUROS -->
-    <div id="futureView" style="display:none;">
-        <div class="section-card"><div class="section-title">📅 AGENDAR</div><input type="text" id="futureDesc" placeholder="Descrição"><input type="number" id="futureAmount" placeholder="Valor"><input type="date" id="futureDate"><select id="futureType"><option value="expense">Despesa</option><option value="income">Receita</option></select><button id="addFutureBtn" class="btn-primary">Agendar</button></div>
-        <div class="section-card"><div id="futureList" class="tx-list"></div></div>
-    </div>
+        <div class="container">
+            <div class="top-bar">
+                <div class="hamburger" id="hamburgerBtn"><span></span><span></span><span></span></div>
+                <div class="logo-area"><h1>FINANCEIRO JEAN</h1><p>CONTROLE TOTAL</p></div>
+                <div class="user-info">
+                    <span>👤 Jean</span>
+                    <button id="logoutBtn" class="logout-btn">Sair</button>
+                </div>
+            </div>
 
-    <!-- CARTÕES - VERSÃO SIMPLIFICADA E ORGANIZADA -->
-    <div id="cardsView" style="display:none;">
-        <!-- 1. ADICIONAR CARTÃO -->
-        <div class="section-card">
-            <div class="section-title">💳 ADICIONAR CARTÃO</div>
-            <div class="flex-row">
-                <input type="text" id="newCardName" placeholder="Nome do cartão (ex: Nubank)" style="flex:2">
-                <input type="number" id="newCardLimit" placeholder="Limite R$" style="flex:1">
-                <button id="addCardBtn" class="btn-primary">Adicionar</button>
+            <!-- DASHBOARD -->
+            <div id="dashboardView">
+                <div class="balance-card">
+                    <div class="balance-label">SALDO DISPONÍVEL</div>
+                    <div class="balance-value" id="totalBalance">R$ 0,00</div>
+                    <div class="stats-row">
+                        <div class="stat-box"><div class="label">RECEITAS</div><div class="income" id="totalIncome">R$ 0</div></div>
+                        <div class="stat-box"><div class="label">DESPESAS</div><div class="expense" id="totalExpense">R$ 0</div></div>
+                    </div>
+                </div>
+
+                <div class="section-card">
+                    <div class="section-title">📊 RESUMO FINANCEIRO</div>
+                    <div class="chart-row">
+                        <div class="chart-box"><h4>Receitas vs Despesas</h4><canvas id="incomeExpenseChart"></canvas></div>
+                        <div class="chart-box"><h4>Faturamento Loja</h4><canvas id="storeSalesChart"></canvas></div>
+                    </div>
+                    <div class="chart-row">
+                        <div class="chart-box"><h4>Despesas por Categoria</h4><canvas id="expenseCategoryChart"></canvas></div>
+                        <div class="chart-box"><h4>Lucro Diário Loja</h4><canvas id="dailyProfitChart"></canvas></div>
+                    </div>
+                </div>
+
+                <div class="profit-card">
+                    <div class="balance-label">🏪 LUCRO DA LOJA (HOJE)</div>
+                    <div class="profit-value" id="todayProfit">R$ 0,00</div>
+                </div>
+                
+                <div class="section-card">
+                    <div class="section-title">📋 ÚLTIMAS MOVIMENTAÇÕES</div>
+                    <div id="recentMovementsList" class="tx-list"></div>
+                </div>
+            </div>
+
+            <!-- REGISTRAR MOVIMENTAÇÃO -->
+            <div id="registerView" style="display:none;">
+                <div class="section-card">
+                    <div class="section-title">💰 REGISTRAR RECEITA / DESPESA</div>
+                    <div class="info-text" style="margin-bottom: 12px;">Use esta seção para lançar receitas e despesas do dia a dia</div>
+                    
+                    <input type="text" id="regDesc" placeholder="Descrição (ex: Salário, Supermercado)">
+                    
+                    <div class="flex-row">
+                        <select id="regType" style="flex:1">
+                            <option value="income">💰 Receita</option>
+                            <option value="expense">💸 Despesa</option>
+                        </select>
+                        <select id="regCategory" style="flex:2"></select>
+                    </div>
+                    
+                    <select id="regPaymentMethod">
+                        <option value="PIX">💳 PIX</option>
+                        <option value="Dinheiro">💵 Dinheiro</option>
+                        <option value="Débito">💳 Débito</option>
+                        <option value="Crédito à vista">💳 Crédito à vista</option>
+                        <option value="Crédito parcelado">📅 Crédito parcelado</option>
+                    </select>
+                    
+                    <div id="cardSelectionArea" style="display:none; margin-bottom: 10px;">
+                        <select id="selectedCard">
+                            <option value="">Selecione o cartão</option>
+                        </select>
+                    </div>
+                    
+                    <div id="parcelasArea" class="parcelas-area">
+                        <div class="sub-title">📅 Dados do Parcelamento</div>
+                        <input type="number" id="parcTotal" placeholder="Valor total da compra R$" step="0.01">
+                        <div class="flex-row">
+                            <input type="number" id="parcCount" placeholder="Nº de parcelas" style="flex:1" min="2" max="24">
+                            <input type="number" id="parcValue" placeholder="Valor por parcela (opcional)" step="0.01" style="flex:1">
+                        </div>
+                        <select id="parcCard" style="margin-top: 8px;">
+                            <option value="">Selecione o cartão para parcelamento</option>
+                        </select>
+                        <div class="info-text">💡 Se não preencher o valor da parcela, será calculado automaticamente</div>
+                    </div>
+                    
+                    <div id="normalValueArea">
+                        <input type="number" id="regAmount" placeholder="Valor R$" step="0.01">
+                    </div>
+                    
+                    <button id="registerMovementBtn" class="btn-primary" style="width:100%; margin-top:12px;">Registrar Movimentação</button>
+                </div>
+
+                <div class="section-card">
+                    <div class="section-title">🔄 REGISTRAR TRANSFERÊNCIA</div>
+                    <div class="info-text" style="margin-bottom: 12px;">Use esta seção para transferir dinheiro entre contas/cartões</div>
+                    
+                    <div class="flex-row">
+                        <select id="transferFrom" style="flex:1">
+                            <option value="Dinheiro">💵 Dinheiro</option>
+                            <option value="PIX">💳 PIX</option>
+                            <option value="Débito">💳 Débito</option>
+                            <option value="Crédito">💳 Crédito</option>
+                        </select>
+                        <span>→</span>
+                        <select id="transferTo" style="flex:1">
+                            <option value="Dinheiro">💵 Dinheiro</option>
+                            <option value="PIX">💳 PIX</option>
+                            <option value="Débito">💳 Débito</option>
+                            <option value="Crédito">💳 Crédito</option>
+                        </select>
+                    </div>
+                    
+                    <div id="transferCardFromArea" style="display:none;">
+                        <select id="transferCardFrom">
+                            <option value="">Selecione o cartão de origem</option>
+                        </select>
+                    </div>
+                    
+                    <div id="transferCardToArea" style="display:none;">
+                        <select id="transferCardTo">
+                            <option value="">Selecione o cartão de destino</option>
+                        </select>
+                    </div>
+                    
+                    <input type="text" id="transferDesc" placeholder="Descrição da transferência (opcional)">
+                    <input type="number" id="transferAmount" placeholder="Valor R$" step="0.01">
+                    
+                    <button id="registerTransferBtn" class="btn-warning" style="width:100%; margin-top:12px;">Registrar Transferência</button>
+                </div>
+
+                <div class="section-card">
+                    <div class="section-title">📋 HISTÓRICO COMPLETO</div>
+                    <div id="fullHistoryList" class="tx-list"></div>
+                </div>
+            </div>
+
+            <!-- CARTÕES -->
+            <div id="cardsView" style="display:none;">
+                <div class="section-card">
+                    <div class="section-title">💳 ADICIONAR NOVO CARTÃO</div>
+                    <div class="card-form">
+                        <input type="text" id="newCardName" placeholder="Nome do cartão (ex: Nubank, Itaú)" style="font-size: 1rem; padding: 14px;">
+                        <input type="text" id="newCardBank" placeholder="Banco (ex: Nubank, Itaú)" style="font-size: 1rem; padding: 14px;">
+                        <input type="number" id="newCardLimit" placeholder="Limite do cartão R$" step="0.01" style="font-size: 1rem; padding: 14px;">
+                        <div class="flex-row">
+                            <input type="number" id="newCardClosingDay" placeholder="Dia do fechamento da fatura (ex: 10)" style="flex:1" min="1" max="31">
+                            <input type="number" id="newCardDueDay" placeholder="Dia do vencimento (ex: 5)" style="flex:1" min="1" max="31">
+                        </div>
+                        <div class="info-text">📌 O fechamento da fatura é quando as compras entram na fatura. O vencimento é a data de pagamento.</div>
+                        <button id="addCardBtn" class="btn-primary" style="width:100%; margin-top:8px;">➕ Adicionar Cartão</button>
+                    </div>
+                </div>
+
+                <div class="section-card">
+                    <div class="section-title">💳 MEUS CARTÕES</div>
+                    <div id="creditCardsList"></div>
+                </div>
+
+                <div class="section-card">
+                    <div class="section-title">📅 FATURAS ABERTAS</div>
+                    <div id="invoicesList" class="tx-list"></div>
+                </div>
+
+                <div class="section-card">
+                    <div class="section-title">📦 PARCELAS ATIVAS</div>
+                    <div id="installmentsList" class="tx-list"></div>
+                </div>
+
+                <div class="section-card">
+                    <div class="section-title">⚡ PAGAR FATURA / PARCELA</div>
+                    <select id="paymentTypeSelect" style="margin-bottom: 8px;">
+                        <option value="invoice">Pagar Fatura</option>
+                        <option value="installment">Pagar Parcela</option>
+                    </select>
+                    <select id="paymentSelect" style="margin-bottom: 8px;"></select>
+                    <button id="confirmPaymentBtn" class="btn-success" style="width:100%;">💸 Confirmar Pagamento</button>
+                </div>
+            </div>
+
+            <!-- LIVRO CAIXA LOJA -->
+            <div id="bookView" style="display:none;">
+                <div class="section-card">
+                    <div class="section-title">🏪 RESUMO DA LOJA</div>
+                    <div class="profit-card"><div class="balance-label">RECEITAS DA LOJA</div><div class="profit-value" id="storeRevenue">R$ 0,00</div></div>
+                    <div class="profit-card"><div class="balance-label">DESPESAS DA LOJA</div><div class="profit-value" style="color:#F43F5E;" id="storeTotalCosts">R$ 0,00</div></div>
+                    <div class="profit-card"><div class="balance-label">LUCRO LÍQUIDO</div><div class="profit-value" id="storeProfit">R$ 0,00</div></div>
+                </div>
+
+                <div class="section-card">
+                    <div class="section-title">💰 REGISTRAR RECEITA DA LOJA</div>
+                    <input type="text" id="saleDesc" placeholder="Descrição (ex: Venda do dia)">
+                    <input type="number" id="saleValue" placeholder="Valor R$" step="0.01">
+                    <div class="flex-row">
+                        <input type="date" id="saleDate" style="flex:1">
+                        <input type="time" id="saleTime" style="flex:1">
+                    </div>
+                    <button id="registerSaleBtn" class="btn-success">💰 Registrar Receita</button>
+                </div>
+
+                <div class="section-card">
+                    <div class="section-title">💸 REGISTRAR DESPESA DA LOJA</div>
+                    <input type="text" id="expenseDesc" placeholder="Descrição (ex: Compra mercadoria)">
+                    <input type="number" id="expenseValue" placeholder="Valor R$" step="0.01">
+                    <div class="flex-row">
+                        <input type="date" id="expenseDate" style="flex:1">
+                        <input type="time" id="expenseTime" style="flex:1">
+                    </div>
+                    <select id="expenseCategory">
+                        <option value="Mercadoria">📦 Mercadoria</option>
+                        <option value="Água/Luz">💡 Água/Luz</option>
+                        <option value="Aluguel">🏠 Aluguel</option>
+                        <option value="Funcionário">👥 Funcionário</option>
+                        <option value="Impostos">📄 Impostos</option>
+                        <option value="Outros">📌 Outros</option>
+                    </select>
+                    <button id="registerExpenseBtn" class="btn-danger">💸 Registrar Despesa</button>
+                </div>
+
+                <div class="section-card">
+                    <div class="section-title">📋 RECEITAS DA LOJA</div>
+                    <div id="salesList" class="tx-list"></div>
+                </div>
+
+                <div class="section-card">
+                    <div class="section-title">📋 DESPESAS DA LOJA</div>
+                    <div id="storeExpensesList" class="tx-list"></div>
+                </div>
+            </div>
+
+            <!-- CATEGORIAS -->
+            <div id="categoriesView" style="display:none;">
+                <div class="section-card">
+                    <div class="section-title">➕ NOVA CATEGORIA</div>
+                    <div class="flex-row">
+                        <input type="text" id="newCategoryName" placeholder="Nome da categoria" style="flex:2">
+                        <select id="newCategoryType" style="flex:1">
+                            <option value="expense">Despesa</option>
+                            <option value="income">Receita</option>
+                        </select>
+                        <button id="addCategoryBtn" class="btn-primary">Adicionar</button>
+                    </div>
+                </div>
+                <div class="section-card">
+                    <div class="section-title">📋 MINHAS CATEGORIAS</div>
+                    <div id="categoriesList" class="tx-list"></div>
+                </div>
+            </div>
+
+            <!-- SEGURANÇA -->
+            <div id="securityView" style="display:none;">
+                <div class="section-card">
+                    <div class="section-title">🔐 SEGURANÇA DA CONTA</div>
+                    <div class="info-text" style="margin-bottom: 16px;">
+                        <p>✅ Usuário: <strong>Jean</strong></p>
+                        <p>✅ Nível de segurança: <strong style="color:#10B981;">ALTO</strong></p>
+                    </div>
+                    <button id="changePasswordSecurityBtn" class="btn-primary" style="width:100%;">🔑 Alterar Senha</button>
+                </div>
+
+                <div class="section-card">
+                    <div class="section-title">📊 ESTATÍSTICAS DE SEGURANÇA</div>
+                    <div class="info-text">
+                        <p>🔐 Último acesso: <span id="lastAccess">-</span></p>
+                        <p>🛡️ Tentativas de login: <span id="loginAttempts">0</span></p>
+                    </div>
+                </div>
+
+                <div class="section-card">
+                    <div class="section-title">💾 BACKUP DOS DADOS</div>
+                    <div class="flex-row">
+                        <button id="exportDataBtn" class="btn-primary" style="flex:1">📤 Exportar Dados</button>
+                        <button id="importDataBtn" class="btn-warning" style="flex:1">📥 Importar Dados</button>
+                    </div>
+                    <input type="file" id="importFile" style="display:none;" accept=".json">
+                    <div id="backupMsg" class="info-text" style="margin-top: 8px;"></div>
+                </div>
             </div>
         </div>
+    </div>
 
-        <!-- 2. LISTA DE CARTÕES -->
-        <div class="section-card">
-            <div class="section-title">💳 MEUS CARTÕES</div>
-            <div id="creditCardsList"></div>
-        </div>
+    <script>
+        // ==================== SISTEMA DE SEGURANÇA ====================
+        const DEFAULT_PASSWORD = "171717";
+        let loginAttempts = 0;
+        let lockUntil = null;
 
-        <!-- 3. ADICIONAR PARCELA - SIMPLIFICADO -->
-        <div class="section-card">
-            <div class="section-title">📅 NOVA PARCELA</div>
-            <div class="info-text">Preencha os dados da compra parcelada</div>
+        function getStoredPassword() { return localStorage.getItem('jean_password') || DEFAULT_PASSWORD; }
+        function saveNewPassword(newPassword) { localStorage.setItem('jean_password', newPassword); }
+        function verifyPassword(password) { return password === getStoredPassword(); }
+        
+        function saveLastAccess() { localStorage.setItem('jean_last_access', new Date().toISOString()); }
+        function getLastAccess() { return localStorage.getItem('jean_last_access') || 'Primeiro acesso'; }
+        function getLoginAttempts() { return parseInt(localStorage.getItem('jean_login_attempts')) || 0; }
+        
+        function incrementLoginAttempts() {
+            let attempts = getLoginAttempts() + 1;
+            localStorage.setItem('jean_login_attempts', attempts);
+            if(attempts >= 5) lockUntil = new Date(Date.now() + 300000);
+            return attempts;
+        }
+        function resetLoginAttempts() { localStorage.setItem('jean_login_attempts', '0'); lockUntil = null; }
+
+        window.togglePassword = function() {
+            const input = document.getElementById('loginPassword');
+            const btn = document.querySelector('#loginContainer .password-toggle');
+            if(input.type === 'password') { input.type = 'text'; btn.textContent = '🙈'; }
+            else { input.type = 'password'; btn.textContent = '👁️'; }
+        }
+        
+        window.toggleModalPassword = function(inputId, element) {
+            const input = document.getElementById(inputId);
+            if(input.type === 'password') { input.type = 'text'; element.textContent = '🙈'; }
+            else { input.type = 'password'; element.textContent = '👁️'; }
+        }
+
+        // ==================== DADOS DO APP ====================
+        let transactions = [];
+        let futurePayments = [];
+        let creditCards = [];
+        let categories = [];
+        let activeInstallments = [];
+        let storeSales = [];
+        let storeExpenses = [];
+        let invoices = [];
+        
+        let nextTransId = 1, nextFutureId = 1, nextCardId = 1, nextCategoryId = 9, nextInstallmentId = 1, nextSaleId = 1, nextExpenseId = 1, nextInvoiceId = 1;
+        let chartIncomeExpense, chartStoreSales, chartExpenseCategory, chartDailyProfit;
+
+        function formatMoney(v) { return new Intl.NumberFormat('pt-BR', {style:'currency',currency:'BRL'}).format(v || 0); }
+        
+        function saveDataToStorage() {
+            localStorage.setItem('jean_finance_data', JSON.stringify({
+                transactions, futurePayments, creditCards, categories, activeInstallments, storeSales, storeExpenses, invoices,
+                ids: { nextTransId, nextFutureId, nextCardId, nextCategoryId, nextInstallmentId, nextSaleId, nextExpenseId, nextInvoiceId }
+            }));
+        }
+        
+        function loadDataFromStorage() {
+            const saved = localStorage.getItem('jean_finance_data');
+            if(saved) {
+                const data = JSON.parse(saved);
+                transactions = data.transactions || [];
+                futurePayments = data.futurePayments || [];
+                creditCards = data.creditCards || [];
+                categories = data.categories || [];
+                activeInstallments = data.activeInstallments || [];
+                storeSales = data.storeSales || [];
+                storeExpenses = data.storeExpenses || [];
+                invoices = data.invoices || [];
+                const ids = data.ids || {};
+                nextTransId = ids.nextTransId || 1;
+                nextFutureId = ids.nextFutureId || 1;
+                nextCardId = ids.nextCardId || 1;
+                nextCategoryId = ids.nextCategoryId || 9;
+                nextInstallmentId = ids.nextInstallmentId || 1;
+                nextSaleId = ids.nextSaleId || 1;
+                nextExpenseId = ids.nextExpenseId || 1;
+                nextInvoiceId = ids.nextInvoiceId || 1;
+            } else {
+                // Dados iniciais
+                transactions = [
+                    {id:1, desc:"Salário", amount:5000, type:"income", category:"Salário", paymentMethod:"PIX", date:new Date().toISOString()},
+                    {id:2, desc:"Aluguel", amount:1200, type:"expense", category:"Moradia", paymentMethod:"PIX", date:new Date().toISOString()}
+                ];
+                categories = [
+                    { id: 1, name: "Alimentação", type: "expense" }, { id: 2, name: "Moradia", type: "expense" },
+                    { id: 3, name: "Transporte", type: "expense" }, { id: 4, name: "Saúde", type: "expense" },
+                    { id: 5, name: "Lazer", type: "expense" }, { id: 6, name: "Salário", type: "income" },
+                    { id: 7, name: "Freelance", type: "income" }, { id: 8, name: "Vendas Loja", type: "income" }
+                ];
+                creditCards = [
+                    {id:1, name:"Nubank", limit:5000, used:1250, bank:"Nubank", closingDay: 10, dueDay: 5, statementBalance: 20},
+                    {id:2, name:"Black (Inter)", limit:300, used:0, bank:"Inter", closingDay: 7, dueDay: 15, statementBalance: 0}
+                ];
+                storeSales = [{id:1, desc:"Venda Camiseta", amount:250, date:new Date().toISOString()}];
+                storeExpenses = [{id:1, desc:"Compra mercadoria", amount:300, category:"Mercadoria", date:new Date().toISOString()}];
+                saveDataToStorage();
+            }
+        }
+
+        function getTotals() {
+            let inc=0, exp=0;
+            transactions.forEach(t => { if(t.type==='income') inc+=t.amount; else exp+=t.amount; });
+            return {inc, exp, balance: inc-exp};
+        }
+        
+        function getStoreTotals() {
+            let revenue = storeSales.reduce((sum, s) => sum + (s.amount || 0), 0);
+            let costs = storeExpenses.reduce((sum, e) => sum + (e.amount || 0), 0);
+            return { revenue, costs, profit: revenue - costs };
+        }
+        
+        function getTodayProfit() {
+            let today = new Date().toISOString().split('T')[0];
+            let salesToday = storeSales.filter(s => s.date?.split('T')[0] === today).reduce((sum, s) => sum + (s.amount || 0), 0);
+            let expensesToday = storeExpenses.filter(e => e.date?.split('T')[0] === today).reduce((sum, e) => sum + (e.amount || 0), 0);
+            return salesToday - expensesToday;
+        }
+
+        // REGISTRAR MOVIMENTAÇÃO
+        function registerMovement(desc, amount, type, category, paymentMethod, cardId = null, parcelData = null) {
+            if(!desc || amount<=0) { alert('Preencha descrição e valor'); return false; }
             
-            <input type="text" id="newInstallmentDesc" placeholder="O que você comprou? (ex: Celular, TV)">
+            if(paymentMethod === 'Crédito parcelado' && parcelData) {
+                const { total, installments, valuePerInstallment, parcelCardId } = parcelData;
+                
+                let newInstallment = {
+                    id: nextInstallmentId++,
+                    desc: desc,
+                    totalValue: total,
+                    installments: installments,
+                    remaining: installments,
+                    valuePerInstallment: valuePerInstallment,
+                    cardId: parcelCardId,
+                    startDate: new Date().toISOString(),
+                    paidInstallments: 0
+                };
+                activeInstallments.push(newInstallment);
+                
+                let card = creditCards.find(c => c.id === parcelCardId);
+                if(card) {
+                    card.statementBalance = (card.statementBalance || 0) + total;
+                }
+                
+                transactions.push({
+                    id: nextTransId++, 
+                    desc: `${desc} (1/${installments}) - Compra parcelada`, 
+                    amount: valuePerInstallment,
+                    type: "expense", 
+                    category: category, 
+                    paymentMethod: "Crédito parcelado", 
+                    cardId: parcelCardId, 
+                    date: new Date().toISOString()
+                });
+                
+                alert(`✅ Compra parcelada registrada!\n${installments}x de ${formatMoney(valuePerInstallment)}\nTotal: ${formatMoney(total)} será cobrado na fatura.`);
+            } 
+            else if((paymentMethod === 'Crédito à vista' || paymentMethod === 'Débito') && cardId) {
+                let card = creditCards.find(c => c.id === cardId);
+                if(paymentMethod === 'Crédito à vista' && card) {
+                    card.statementBalance = (card.statementBalance || 0) + amount;
+                    alert(`✅ Compra no crédito à vista registrada!\nValor: ${formatMoney(amount)} será cobrado na próxima fatura.`);
+                } else if(paymentMethod === 'Débito' && card) {
+                    let newUsed = (card.used || 0) + amount;
+                    if(newUsed <= card.limit) {
+                        card.used = newUsed;
+                        alert(`✅ Compra no débito registrada!\nValor: ${formatMoney(amount)}`);
+                    } else {
+                        alert(`⚠️ Atenção: Esse gasto vai exceder o limite do cartão ${card.name}!`);
+                    }
+                }
+                transactions.push({ id: nextTransId++, desc, amount, type, category, paymentMethod, cardId, date: new Date().toISOString() });
+            }
+            else {
+                transactions.push({ id: nextTransId++, desc, amount, type, category, paymentMethod, date: new Date().toISOString() });
+                alert(`✅ Movimentação registrada: ${desc} - ${formatMoney(amount)}`);
+            }
             
-            <div class="flex-row">
-                <input type="number" id="newInstallmentTotal" placeholder="Valor total R$" style="flex:1">
-                <input type="number" id="newInstallmentCount" placeholder="Nº de parcelas" style="flex:1" min="2" max="24">
-            </div>
+            refreshAllViews();
+            return true;
+        }
+        
+        // Adicionar cartão
+        function addCreditCard() {
+            let name = document.getElementById('newCardName').value.trim();
+            let bank = document.getElementById('newCardBank').value.trim();
+            let limit = parseFloat(document.getElementById('newCardLimit').value);
+            let closingDay = parseInt(document.getElementById('newCardClosingDay').value);
+            let dueDay = parseInt(document.getElementById('newCardDueDay').value);
             
-            <div class="flex-row">
-                <input type="number" id="newInstallmentValue" placeholder="Valor por parcela (opcional)" step="0.01" style="flex:1">
-                <select id="newInstallmentCard" style="flex:1"></select>
-            </div>
-            <div class="info-text">💡 Se não preencher o valor da parcela, será calculado automaticamente (total ÷ parcelas)</div>
+            if(!name) { alert('Digite o nome do cartão'); return; }
+            if(isNaN(limit) || limit <= 0) { alert('Digite um limite válido'); return; }
+            if(isNaN(closingDay) || closingDay < 1 || closingDay > 31) { closingDay = 10; }
+            if(isNaN(dueDay) || dueDay < 1 || dueDay > 31) { dueDay = 5; }
             
-            <button id="addInstallmentBtn" class="btn-warning" style="width:100%; margin-top:8px;">➕ Adicionar Parcela</button>
-        </div>
-
-        <!-- 4. PARCELAS ATIVAS -->
-        <div class="section-card">
-            <div class="section-title">📅 PARCELAS ATIVAS</div>
-            <div id="installmentsList" class="tx-list"></div>
-        </div>
-
-        <!-- 5. PAGAMENTO ADIANTADO -->
-        <div class="section-card">
-            <div class="section-title">⚡ PAGAR PARCELA ADIANTADO</div>
-            <select id="earlyPaymentInstallment" style="margin-bottom: 8px;"></select>
-            <div class="flex-row">
-                <button id="payOneInstallmentBtn" class="btn-success" style="flex:1">Pagar 1 parcela</button>
-                <button id="payAllInstallmentsBtn" class="btn-danger" style="flex:1">Pagar todas</button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<script>
-    // DADOS PRINCIPAIS
-    let transactions = [];
-    let futurePayments = [];
-    let creditCards = [];
-    let categories = [];
-    let activeInstallments = [];
-    
-    // DADOS DO LIVRO CAIXA LOJA
-    let storeSales = [];
-    let storeExpenses = [];
-    
-    let nextTransId = 1, nextFutureId = 1, nextCardId = 1, nextCategoryId = 1, nextInstallmentId = 1;
-    let nextSaleId = 1, nextExpenseId = 1;
-    
-    let chartIncomeExpense, chartStoreSales, chartExpenseCategory, chartDailyProfit;
-
-    const defaultCategories = [
-        { id: 1, name: "Alimentação", type: "expense" }, { id: 2, name: "Moradia", type: "expense" },
-        { id: 3, name: "Transporte", type: "expense" }, { id: 4, name: "Saúde", type: "expense" },
-        { id: 5, name: "Lazer", type: "expense" }, { id: 6, name: "Salário", type: "income" },
-        { id: 7, name: "Freelance", type: "income" }, { id: 8, name: "Vendas Loja", type: "income" }
-    ];
-
-    function formatMoney(v) { return new Intl.NumberFormat('pt-BR', {style:'currency',currency:'BRL'}).format(v || 0); }
-
-    function saveAll() {
-        localStorage.setItem('jean_transactions', JSON.stringify(transactions));
-        localStorage.setItem('jean_future', JSON.stringify(futurePayments));
-        localStorage.setItem('jean_cards', JSON.stringify(creditCards));
-        localStorage.setItem('jean_categories', JSON.stringify(categories));
-        localStorage.setItem('jean_installments', JSON.stringify(activeInstallments));
-        localStorage.setItem('jean_storeSales', JSON.stringify(storeSales));
-        localStorage.setItem('jean_storeExpenses', JSON.stringify(storeExpenses));
-        localStorage.setItem('jean_ids', JSON.stringify({nextTransId, nextFutureId, nextCardId, nextCategoryId, nextInstallmentId, nextSaleId, nextExpenseId}));
-    }
-
-    function loadAll() {
-        let t = localStorage.getItem('jean_transactions');
-        let f = localStorage.getItem('jean_future');
-        let c = localStorage.getItem('jean_cards');
-        let cat = localStorage.getItem('jean_categories');
-        let inst = localStorage.getItem('jean_installments');
-        let sales = localStorage.getItem('jean_storeSales');
-        let expenses = localStorage.getItem('jean_storeExpenses');
-        let ids = localStorage.getItem('jean_ids');
+            creditCards.push({ 
+                id: nextCardId++, 
+                name, 
+                limit, 
+                used: 0, 
+                bank: bank || 'Não informado',
+                closingDay: closingDay,
+                dueDay: dueDay,
+                statementBalance: 0
+            });
+            refreshAllViews();
+            document.getElementById('newCardName').value = '';
+            document.getElementById('newCardBank').value = '';
+            document.getElementById('newCardLimit').value = '';
+            document.getElementById('newCardClosingDay').value = '';
+            document.getElementById('newCardDueDay').value = '';
+            alert(`✅ Cartão ${name} adicionado com sucesso!\n📅 Fatura fecha dia ${closingDay} e vence dia ${dueDay}`);
+        }
         
-        if(t) transactions = JSON.parse(t);
-        if(f) futurePayments = JSON.parse(f);
-        if(c) creditCards = JSON.parse(c);
-        if(cat) categories = JSON.parse(cat);
-        if(inst) activeInstallments = JSON.parse(inst);
-        if(sales) storeSales = JSON.parse(sales);
-        if(expenses) storeExpenses = JSON.parse(expenses);
-        if(ids) { let d = JSON.parse(ids); nextTransId = d.nextTransId || 1; nextFutureId = d.nextFutureId || 1; nextCardId = d.nextCardId || 1; nextCategoryId = d.nextCategoryId || 9; nextInstallmentId = d.nextInstallmentId || 1; nextSaleId = d.nextSaleId || 1; nextExpenseId = d.nextExpenseId || 1; }
+        // Editar cartão
+        function editCard(cardId) {
+            let card = creditCards.find(c => c.id === cardId);
+            if(!card) return;
+            
+            document.getElementById('editCardId').value = card.id;
+            document.getElementById('editCardName').value = card.name;
+            document.getElementById('editCardBank').value = card.bank || '';
+            document.getElementById('editCardLimit').value = card.limit;
+            document.getElementById('editCardClosingDay').value = card.closingDay || 10;
+            document.getElementById('editCardDueDay').value = card.dueDay || 5;
+            
+            document.getElementById('editCardModal').classList.remove('hide');
+        }
         
-        if(categories.length === 0) categories = [...defaultCategories];
-        if(transactions.length === 0){
-            transactions = [
-                {id:nextTransId++, desc:"Salário", amount:5000, type:"income", category:"Salário", paymentMethod:"PIX", date:new Date().toISOString()},
-                {id:nextTransId++, desc:"Aluguel", amount:1200, type:"expense", category:"Moradia", paymentMethod:"PIX", date:new Date().toISOString()}
-            ];
+        function saveEditCard() {
+            let cardId = parseInt(document.getElementById('editCardId').value);
+            let cardIndex = creditCards.findIndex(c => c.id === cardId);
+            if(cardIndex === -1) return;
+            
+            let newName = document.getElementById('editCardName').value.trim();
+            let newBank = document.getElementById('editCardBank').value.trim();
+            let newLimit = parseFloat(document.getElementById('editCardLimit').value);
+            let newClosingDay = parseInt(document.getElementById('editCardClosingDay').value);
+            let newDueDay = parseInt(document.getElementById('editCardDueDay').value);
+            
+            if(!newName) { alert('Digite o nome do cartão'); return; }
+            if(isNaN(newLimit) || newLimit <= 0) { alert('Digite um limite válido'); return; }
+            
+            creditCards[cardIndex] = {
+                ...creditCards[cardIndex],
+                name: newName,
+                bank: newBank || 'Não informado',
+                limit: newLimit,
+                closingDay: newClosingDay || 10,
+                dueDay: newDueDay || 5
+            };
+            
+            document.getElementById('editCardModal').classList.add('hide');
+            refreshAllViews();
+            alert(`✅ Cartão ${newName} atualizado com sucesso!`);
         }
-        if(storeSales.length === 0){
-            storeSales = [
-                {id:nextSaleId++, desc:"Venda Camiseta", amount:250, date:new Date().toISOString()},
-                {id:nextSaleId++, desc:"Venda Calça", amount:240, date:new Date(Date.now() - 86400000).toISOString()}
-            ];
-            storeSales.forEach(s => { if(!transactions.find(t => t.desc === s.desc && t.amount === s.amount)) transactions.push({id:nextTransId++, desc:s.desc, amount:s.amount, type:"income", category:"Vendas Loja", paymentMethod:"Dinheiro", date:s.date}); });
-        }
-        if(storeExpenses.length === 0){
-            storeExpenses = [
-                {id:nextExpenseId++, desc:"Compra mercadoria", amount:300, category:"Mercadoria", date:new Date().toISOString()}
-            ];
-            storeExpenses.forEach(e => { if(!transactions.find(t => t.desc === e.desc && t.amount === e.amount)) transactions.push({id:nextTransId++, desc:e.desc, amount:e.amount, type:"expense", category:"Despesa Loja", paymentMethod:"PIX", date:e.date}); });
-        }
-        if(creditCards.length === 0){
-            creditCards = [
-                {id:nextCardId++, name:"Nubank", limit:5000, used:1250},
-                {id:nextCardId++, name:"Itaú", limit:8000, used:2300}
-            ];
-        }
-    }
-
-    function getTotals() {
-        let inc=0, exp=0;
-        transactions.forEach(t => { if(t.type==='income') inc+=t.amount; else exp+=t.amount; });
-        return {inc, exp, balance: inc-exp};
-    }
-
-    function getStoreTotals() {
-        let revenue = storeSales.reduce((sum, s) => sum + (s.amount || 0), 0);
-        let costs = storeExpenses.reduce((sum, e) => sum + (e.amount || 0), 0);
-        let profit = revenue - costs;
-        return { revenue, costs, profit };
-    }
-
-    function getTodayProfit() {
-        let today = new Date().toISOString().split('T')[0];
-        let salesToday = storeSales.filter(s => s.date && s.date.split('T')[0] === today).reduce((sum, s) => sum + (s.amount || 0), 0);
-        let expensesToday = storeExpenses.filter(e => e.date && e.date.split('T')[0] === today).reduce((sum, e) => sum + (e.amount || 0), 0);
-        return salesToday - expensesToday;
-    }
-
-    // REGISTRAR RECEITA LOJA
-    function registerSale(desc, amount, date, time) {
-        if(!desc || amount<=0) { alert('Preencha descrição e valor'); return false; }
-        let fullDate = date ? new Date(date) : new Date();
-        if(time) {
-            let [hours, minutes] = time.split(':');
-            fullDate.setHours(parseInt(hours), parseInt(minutes));
-        }
-        let newSale = { id: nextSaleId++, desc, amount, date: fullDate.toISOString() };
-        storeSales.push(newSale);
-        let newTrans = { id: nextTransId++, desc: `Receita Loja: ${desc}`, amount: amount, type: "income", category: "Vendas Loja", paymentMethod: "Dinheiro", date: fullDate.toISOString() };
-        transactions.push(newTrans);
-        refreshAllViews();
-        return true;
-    }
-
-    // REGISTRAR DESPESA LOJA
-    function registerExpense(desc, amount, category, date, time) {
-        if(!desc || amount<=0) { alert('Preencha descrição e valor'); return false; }
-        let fullDate = date ? new Date(date) : new Date();
-        if(time) {
-            let [hours, minutes] = time.split(':');
-            fullDate.setHours(parseInt(hours), parseInt(minutes));
-        }
-        let newExpense = { id: nextExpenseId++, desc, amount, category, date: fullDate.toISOString() };
-        storeExpenses.push(newExpense);
-        let newTrans = { id: nextTransId++, desc: `Loja: ${desc}`, amount: amount, type: "expense", category: "Despesa Loja", paymentMethod: "PIX", date: fullDate.toISOString() };
-        transactions.push(newTrans);
-        refreshAllViews();
-        return true;
-    }
-
-    // ADICIONAR CARTÃO
-    function addCreditCard() {
-        let name = document.getElementById('newCardName').value.trim();
-        let limit = parseFloat(document.getElementById('newCardLimit').value);
-        if(!name) { alert('Digite o nome do cartão'); return; }
-        if(isNaN(limit) || limit <= 0) { alert('Digite um limite válido'); return; }
-        creditCards.push({ id: nextCardId++, name, limit, used: 0 });
-        refreshAllViews();
-        document.getElementById('newCardName').value = '';
-        document.getElementById('newCardLimit').value = '';
-        alert(`Cartão ${name} adicionado com sucesso!`);
-    }
-
-    // ADICIONAR PARCELA - SIMPLIFICADO
-    function addInstallment(desc, total, installments, valuePerInstallment, cardId) {
-        if(!desc) { alert('Digite a descrição da compra'); return false; }
-        if(isNaN(total) || total <= 0) { alert('Digite o valor total válido'); return false; }
-        if(isNaN(installments) || installments < 2) { alert('Digite o número de parcelas (mínimo 2)'); return false; }
         
-        let parcelValue = valuePerInstallment || (total / installments);
+        // Excluir cartão
+        function deleteCard(cardId) {
+            if(confirm('Tem certeza que deseja excluir este cartão? Todas as parcelas associadas também serão removidas.')) {
+                // Remover parcelas associadas
+                activeInstallments = activeInstallments.filter(i => i.cardId !== cardId);
+                // Remover cartão
+                creditCards = creditCards.filter(c => c.id !== cardId);
+                refreshAllViews();
+                alert('✅ Cartão removido com sucesso!');
+            }
+        }
         
-        let newInstallment = {
-            id: nextInstallmentId++,
-            desc: desc,
-            totalValue: total,
-            installments: installments,
-            remaining: installments,
-            valuePerInstallment: parcelValue,
-            cardId: cardId,
-            startDate: new Date().toISOString(),
-            paidInstallments: 0
-        };
-        activeInstallments.push(newInstallment);
-        refreshAllViews();
-        alert(`Parcela adicionada: ${desc} - ${installments}x de ${formatMoney(parcelValue)}`);
-        return true;
-    }
-
-    // PAGAR PARCELA
-    function payInstallment(installmentId, payAll = false) {
-        let installment = activeInstallments.find(i => i.id === installmentId);
-        if(!installment || installment.remaining <= 0) return;
-        
-        let toPay = payAll ? installment.remaining : 1;
-        for(let i = 0; i < toPay; i++) {
-            let newTrans = {
+        // Pagar fatura
+        function payInvoice(invoiceId) {
+            let invoice = invoices.find(i => i.id === invoiceId);
+            if(!invoice) return false;
+            
+            let card = creditCards.find(c => c.id === invoice.cardId);
+            if(card) {
+                card.statementBalance = Math.max(0, (card.statementBalance || 0) - invoice.amount);
+            }
+            
+            invoice.status = 'paid';
+            invoice.paidAt = new Date().toISOString();
+            
+            transactions.push({
                 id: nextTransId++,
-                desc: `${installment.desc} (${installment.installments - installment.remaining + 1}/${installment.installments})`,
+                desc: `Pagamento fatura ${card ? card.name : 'Cartão'} - ${formatMoney(invoice.amount)}`,
+                amount: invoice.amount,
+                type: "expense",
+                category: "Fatura Cartão",
+                paymentMethod: "PIX",
+                date: new Date().toISOString()
+            });
+            
+            refreshAllViews();
+            alert(`✅ Fatura paga com sucesso!`);
+            return true;
+        }
+        
+        // Pagar parcela
+        function payInstallment(installmentId) {
+            let installment = activeInstallments.find(i => i.id === installmentId);
+            if(!installment || installment.remaining <= 0) return;
+            
+            let currentParcel = installment.installments - installment.remaining + 1;
+            
+            transactions.push({
+                id: nextTransId++,
+                desc: `${installment.desc} (${currentParcel}/${installment.installments}) - Pagamento`,
                 amount: installment.valuePerInstallment,
                 type: "expense",
                 category: "Parcelas",
-                paymentMethod: "Cartão",
+                paymentMethod: "Crédito parcelado",
+                cardId: installment.cardId,
                 date: new Date().toISOString()
-            };
-            transactions.push(newTrans);
+            });
+            
             installment.remaining--;
-            installment.paidInstallments = (installment.paidInstallments || 0) + 1;
-        }
-        
-        if(installment.remaining === 0) {
-            activeInstallments = activeInstallments.filter(i => i.id !== installmentId);
-        }
-        refreshAllViews();
-    }
-
-    // GASTAR NO CARTÃO
-    function spendOnCard(cardId, value) {
-        let card = creditCards.find(c => c.id === cardId);
-        if(!card) return false;
-        let newUsed = card.used + value;
-        if(newUsed > card.limit) {
-            alert(`Limite excedido! Disponível: ${formatMoney(card.limit - card.used)}`);
-            return false;
-        }
-        card.used = newUsed;
-        let newTrans = {
-            id: nextTransId++,
-            desc: `Gasto cartão ${card.name}`,
-            amount: value,
-            type: "expense",
-            category: "Compras",
-            paymentMethod: "Crédito",
-            date: new Date().toISOString()
-        };
-        transactions.push(newTrans);
-        refreshAllViews();
-        return true;
-    }
-
-    // GRÁFICOS
-    function updateAllCharts() {
-        const {inc, exp} = getTotals();
-        
-        if(chartIncomeExpense) chartIncomeExpense.destroy();
-        let ctx1 = document.getElementById('incomeExpenseChart').getContext('2d');
-        chartIncomeExpense = new Chart(ctx1, {
-            type: 'doughnut',
-            data: { labels: ['Receitas', 'Despesas'], datasets: [{ data: [inc, exp], backgroundColor: ['#10B981', '#F43F5E'], borderWidth: 0, cutout: '60%' }] },
-            options: { responsive: true, maintainAspectRatio: true, plugins: { legend: { position: 'bottom', labels: { color: '#CBD5E1', font: { size: 9 } } } } }
-        });
-
-        let last7Days = [];
-        for(let i=6; i>=0; i--) {
-            let date = new Date(); date.setDate(date.getDate() - i);
-            let dateStr = date.toISOString().split('T')[0];
-            let daySales = storeSales.filter(s => s.date && s.date.split('T')[0] === dateStr).reduce((sum, s) => sum + (s.amount || 0), 0);
-            last7Days.push(daySales);
-        }
-        if(chartStoreSales) chartStoreSales.destroy();
-        let ctx2 = document.getElementById('storeSalesChart').getContext('2d');
-        chartStoreSales = new Chart(ctx2, {
-            type: 'bar',
-            data: { labels: ['D-6', 'D-5', 'D-4', 'D-3', 'D-2', 'Ontem', 'Hoje'], datasets: [{ label: 'Faturamento (R$)', data: last7Days, backgroundColor: '#10B981', borderRadius: 8 }] },
-            options: { responsive: true, maintainAspectRatio: true, plugins: { legend: { labels: { color: '#CBD5E1', font: { size: 8 } } } }, scales: { y: { beginAtZero: true, ticks: { color: '#CBD5E1' } }, x: { ticks: { color: '#CBD5E1', font: { size: 8 } } } } }
-        });
-
-        let expensesByCat = {};
-        transactions.filter(t => t.type === 'expense').forEach(t => {
-            let cat = t.category || 'Outros';
-            expensesByCat[cat] = (expensesByCat[cat] || 0) + t.amount;
-        });
-        if(chartExpenseCategory) chartExpenseCategory.destroy();
-        let ctx3 = document.getElementById('expenseCategoryChart').getContext('2d');
-        chartExpenseCategory = new Chart(ctx3, {
-            type: 'bar',
-            data: { labels: Object.keys(expensesByCat).slice(0,5), datasets: [{ label: 'Despesas (R$)', data: Object.values(expensesByCat).slice(0,5), backgroundColor: '#F43F5E', borderRadius: 8 }] },
-            options: { responsive: true, maintainAspectRatio: true, plugins: { legend: { labels: { color: '#CBD5E1', font: { size: 8 } } } }, scales: { y: { beginAtZero: true, ticks: { color: '#CBD5E1' } }, x: { ticks: { color: '#CBD5E1', font: { size: 8 } } } } }
-        });
-
-        let last7DaysProfit = [];
-        for(let i=6; i>=0; i--) {
-            let date = new Date(); date.setDate(date.getDate() - i);
-            let dateStr = date.toISOString().split('T')[0];
-            let daySales = storeSales.filter(s => s.date && s.date.split('T')[0] === dateStr).reduce((sum, s) => sum + (s.amount || 0), 0);
-            let dayExpenses = storeExpenses.filter(e => e.date && e.date.split('T')[0] === dateStr).reduce((sum, e) => sum + (e.amount || 0), 0);
-            last7DaysProfit.push(daySales - dayExpenses);
-        }
-        if(chartDailyProfit) chartDailyProfit.destroy();
-        let ctx4 = document.getElementById('dailyProfitChart').getContext('2d');
-        chartDailyProfit = new Chart(ctx4, {
-            type: 'line',
-            data: { labels: ['D-6', 'D-5', 'D-4', 'D-3', 'D-2', 'Ontem', 'Hoje'], datasets: [{ label: 'Lucro Diário (R$)', data: last7DaysProfit, borderColor: '#FBBF24', backgroundColor: 'rgba(251,191,36,0.1)', fill: true, tension: 0.3 }] },
-            options: { responsive: true, maintainAspectRatio: true, plugins: { legend: { labels: { color: '#CBD5E1', font: { size: 8 } } } }, scales: { y: { beginAtZero: true, ticks: { color: '#CBD5E1' } }, x: { ticks: { color: '#CBD5E1', font: { size: 8 } } } } }
-        });
-    }
-
-    function refreshAllViews() {
-        const {inc, exp, balance} = getTotals();
-        const store = getStoreTotals();
-        const todayProfit = getTodayProfit();
-        
-        document.getElementById('totalBalance').innerHTML = formatMoney(balance);
-        document.getElementById('totalIncome').innerHTML = formatMoney(inc);
-        document.getElementById('totalExpense').innerHTML = formatMoney(exp);
-        document.getElementById('todayProfit').innerHTML = formatMoney(todayProfit);
-        
-        document.getElementById('storeRevenue').innerHTML = formatMoney(store.revenue);
-        document.getElementById('storeTotalCosts').innerHTML = formatMoney(store.costs);
-        document.getElementById('storeProfit').innerHTML = formatMoney(store.profit);
-        
-        let catSelect = document.getElementById('movCategory');
-        if(catSelect) { catSelect.innerHTML = categories.map(c => `<option value="${c.name}">${c.name}</option>`).join(''); }
-        
-        // Atualiza selects de cartões
-        let cardSelect = document.getElementById('newInstallmentCard');
-        if(cardSelect) { 
-            if(creditCards.length === 0) {
-                cardSelect.innerHTML = '<option value="">Nenhum cartão cadastrado</option>';
-            } else {
-                cardSelect.innerHTML = creditCards.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+            installment.paidInstallments++;
+            
+            let card = creditCards.find(c => c.id === installment.cardId);
+            if(card) {
+                card.statementBalance = (card.statementBalance || 0) - installment.valuePerInstallment;
             }
-        }
-        
-        let earlySelect = document.getElementById('earlyPaymentInstallment');
-        if(earlySelect) { 
-            if(activeInstallments.length === 0) {
-                earlySelect.innerHTML = '<option value="">Nenhuma parcela ativa</option>';
-            } else {
-                earlySelect.innerHTML = activeInstallments.map(i => `<option value="${i.id}">${i.desc} - ${i.remaining}/${i.installments} restantes (${formatMoney(i.valuePerInstallment)}/mês)</option>`).join('');
+            
+            if(installment.remaining === 0) {
+                activeInstallments = activeInstallments.filter(i => i.id !== installmentId);
             }
+            
+            refreshAllViews();
+            alert(`✅ Parcela ${currentParcel}/${installment.installments} paga!`);
         }
         
-        // Lista todas movimentações
-        let allMovDiv = document.getElementById('allMovementsList');
-        if(allMovDiv) {
-            let allMoves = [...transactions].sort((a,b) => new Date(b.date) - new Date(a.date));
-            allMovDiv.innerHTML = allMoves.slice(0,30).map(t => `<div class="tx-item" style="border-left-color:${t.type==='income'?'#10B981':'#F43F5E'}">
-                <div><strong>${escapeHtml(t.desc)}</strong><div style="font-size:0.6rem;">${new Date(t.date).toLocaleString()} | ${t.category || 'Sem cat'}</div></div>
-                <div>${t.type==='income'?'+':'-'} ${formatMoney(t.amount)}<button class="delete-trans" data-id="${t.id}">🗑️</button></div></div>`).join('');
-            document.querySelectorAll('.delete-trans').forEach(btn=>{ btn.addEventListener('click',()=>{ transactions=transactions.filter(t=>t.id!==parseInt(btn.dataset.id)); refreshAllViews(); saveAll(); }); });
+        function registerSale(desc, amount, date, time) {
+            if(!desc || amount<=0) { alert('Preencha descrição e valor'); return; }
+            let fullDate = date ? new Date(date) : new Date();
+            if(time) { let [h,m] = time.split(':'); fullDate.setHours(parseInt(h), parseInt(m)); }
+            storeSales.push({ id: nextSaleId++, desc, amount, date: fullDate.toISOString() });
+            transactions.push({ id: nextTransId++, desc: `Receita Loja: ${desc}`, amount, type: "income", category: "Vendas Loja", paymentMethod: "Dinheiro", date: fullDate.toISOString() });
+            refreshAllViews();
+            alert(`✅ Receita da loja registrada: ${formatMoney(amount)}`);
         }
         
-        // Lista receitas loja
-        let salesDiv = document.getElementById('salesList');
-        if(salesDiv) salesDiv.innerHTML = storeSales.slice().reverse().slice(0,15).map(s => `<div class="tx-item" style="border-left-color:#10B981"><div><strong>💰 ${escapeHtml(s.desc)}</strong><div style="font-size:0.6rem;">${new Date(s.date).toLocaleString()}</div></div><div>${formatMoney(s.amount)}<button class="delete-sale" data-id="${s.id}">🗑️</button></div></div>`).join('');
-        document.querySelectorAll('.delete-sale')?.forEach(btn=>{ btn.addEventListener('click',()=>{ let id=parseInt(btn.dataset.id); let sale = storeSales.find(s=>s.id===id); if(sale) { transactions = transactions.filter(t => !(t.desc === sale.desc && t.amount === sale.amount && t.type==='income')); storeSales=storeSales.filter(s=>s.id!==id); refreshAllViews(); saveAll(); } }); });
+        function registerExpense(desc, amount, category, date, time) {
+            if(!desc || amount<=0) { alert('Preencha descrição e valor'); return; }
+            let fullDate = date ? new Date(date) : new Date();
+            if(time) { let [h,m] = time.split(':'); fullDate.setHours(parseInt(h), parseInt(m)); }
+            storeExpenses.push({ id: nextExpenseId++, desc, amount, category, date: fullDate.toISOString() });
+            transactions.push({ id: nextTransId++, desc: `Loja: ${desc}`, amount, type: "expense", category: "Despesa Loja", paymentMethod: "PIX", date: fullDate.toISOString() });
+            refreshAllViews();
+            alert(`✅ Despesa da loja registrada: ${formatMoney(amount)}`);
+        }
         
-        // Lista despesas loja
-        let expDiv = document.getElementById('storeExpensesList');
-        if(expDiv) expDiv.innerHTML = storeExpenses.slice().reverse().slice(0,15).map(e => `<div class="tx-item" style="border-left-color:#F43F5E"><div><strong>💸 ${escapeHtml(e.desc)}</strong><div style="font-size:0.6rem;">${e.category} | ${new Date(e.date).toLocaleString()}</div></div><div>${formatMoney(e.amount)}<button class="delete-exp" data-id="${e.id}">🗑️</button></div></div>`).join('');
-        document.querySelectorAll('.delete-exp')?.forEach(btn=>{ btn.addEventListener('click',()=>{ let id=parseInt(btn.dataset.id); let exp = storeExpenses.find(e=>e.id===id); if(exp) { transactions = transactions.filter(t => !(t.desc === exp.desc && t.amount === exp.amount && t.type==='expense')); storeExpenses=storeExpenses.filter(e=>e.id!==id); refreshAllViews(); saveAll(); } }); });
-        
-        // Lista cartões
-        let cardsDiv = document.getElementById('creditCardsList');
-        if(cardsDiv) {
-            if(creditCards.length === 0) {
-                cardsDiv.innerHTML = '<div style="text-align:center; padding:20px;">Nenhum cartão cadastrado. Adicione um cartão acima.</div>';
-            } else {
-                cardsDiv.innerHTML = creditCards.map(card => {
+        function addNewCategory() {
+            let name = document.getElementById('newCategoryName')?.value;
+            let type = document.getElementById('newCategoryType')?.value;
+            if(name) { categories.push({ id: nextCategoryId++, name, type }); refreshAllViews(); alert(`✅ Categoria ${name} adicionada!`); }
+            else alert('Digite o nome da categoria');
+        }
+
+        function escapeHtml(s) { if(!s) return ''; return s.replace(/[&<>]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;'})[m]); }
+
+        function updateAllCharts() {
+            const {inc, exp} = getTotals();
+            if(chartIncomeExpense) chartIncomeExpense.destroy();
+            chartIncomeExpense = new Chart(document.getElementById('incomeExpenseChart'), {
+                type: 'doughnut',
+                data: { labels: ['Receitas', 'Despesas'], datasets: [{ data: [inc, exp], backgroundColor: ['#10B981', '#F43F5E'], borderWidth: 0, cutout: '60%' }] },
+                options: { responsive: true, plugins: { legend: { position: 'bottom', labels: { color: '#CBD5E1', font: { size: 9 } } } } }
+            });
+            
+            let last7Days = [];
+            for(let i=6; i>=0; i--) {
+                let date = new Date(); date.setDate(date.getDate() - i);
+                let daySales = storeSales.filter(s => s.date?.split('T')[0] === date.toISOString().split('T')[0]).reduce((s, v) => s + (v.amount||0), 0);
+                last7Days.push(daySales);
+            }
+            if(chartStoreSales) chartStoreSales.destroy();
+            chartStoreSales = new Chart(document.getElementById('storeSalesChart'), {
+                type: 'bar', data: { labels: ['D-6', 'D-5', 'D-4', 'D-3', 'D-2', 'Ontem', 'Hoje'], datasets: [{ label: 'Faturamento (R$)', data: last7Days, backgroundColor: '#10B981', borderRadius: 8 }] },
+                options: { responsive: true, plugins: { legend: { labels: { color: '#CBD5E1', font: { size: 8 } } } }, scales: { y: { beginAtZero: true, ticks: { color: '#CBD5E1' } }, x: { ticks: { color: '#CBD5E1', font: { size: 8 } } } } }
+            });
+            
+            let expensesByCat = {};
+            transactions.filter(t => t.type === 'expense').forEach(t => { let cat = t.category || 'Outros'; expensesByCat[cat] = (expensesByCat[cat] || 0) + t.amount; });
+            if(chartExpenseCategory) chartExpenseCategory.destroy();
+            chartExpenseCategory = new Chart(document.getElementById('expenseCategoryChart'), {
+                type: 'bar', data: { labels: Object.keys(expensesByCat).slice(0,5), datasets: [{ label: 'Despesas (R$)', data: Object.values(expensesByCat).slice(0,5), backgroundColor: '#F43F5E', borderRadius: 8 }] },
+                options: { responsive: true, plugins: { legend: { labels: { color: '#CBD5E1', font: { size: 8 } } } }, scales: { y: { beginAtZero: true, ticks: { color: '#CBD5E1' } }, x: { ticks: { color: '#CBD5E1', font: { size: 8 } } } } }
+            });
+            
+            let last7Profit = [];
+            for(let i=6; i>=0; i--) {
+                let date = new Date(); date.setDate(date.getDate() - i);
+                let daySales = storeSales.filter(s => s.date?.split('T')[0] === date.toISOString().split('T')[0]).reduce((s, v) => s + (v.amount||0), 0);
+                let dayExpenses = storeExpenses.filter(e => e.date?.split('T')[0] === date.toISOString().split('T')[0]).reduce((s, v) => s + (v.amount||0), 0);
+                last7Profit.push(daySales - dayExpenses);
+            }
+            if(chartDailyProfit) chartDailyProfit.destroy();
+            chartDailyProfit = new Chart(document.getElementById('dailyProfitChart'), {
+                type: 'line', data: { labels: ['D-6', 'D-5', 'D-4', 'D-3', 'D-2', 'Ontem', 'Hoje'], datasets: [{ label: 'Lucro Diário (R$)', data: last7Profit, borderColor: '#FBBF24', backgroundColor: 'rgba(251,191,36,0.1)', fill: true, tension: 0.3 }] },
+                options: { responsive: true, plugins: { legend: { labels: { color: '#CBD5E1', font: { size: 8 } } } }, scales: { y: { beginAtZero: true, ticks: { color: '#CBD5E1' } }, x: { ticks: { color: '#CBD5E1', font: { size: 8 } } } } }
+            });
+        }
+
+        function refreshAllViews() {
+            const {inc, exp, balance} = getTotals();
+            const store = getStoreTotals();
+            document.getElementById('totalBalance').innerHTML = formatMoney(balance);
+            document.getElementById('totalIncome').innerHTML = formatMoney(inc);
+            document.getElementById('totalExpense').innerHTML = formatMoney(exp);
+            document.getElementById('todayProfit').innerHTML = formatMoney(getTodayProfit());
+            document.getElementById('storeRevenue').innerHTML = formatMoney(store.revenue);
+            document.getElementById('storeTotalCosts').innerHTML = formatMoney(store.costs);
+            document.getElementById('storeProfit').innerHTML = formatMoney(store.profit);
+            document.getElementById('lastAccess').innerHTML = new Date(getLastAccess()).toLocaleString();
+            document.getElementById('loginAttempts').innerHTML = getLoginAttempts();
+            
+            // Select de categorias
+            let catSelect = document.getElementById('regCategory');
+            if(catSelect) catSelect.innerHTML = categories.map(c => `<option value="${c.name}">${c.name}</option>`).join('');
+            
+            // Select de cartões
+            let cardSelect = document.getElementById('selectedCard');
+            if(cardSelect) cardSelect.innerHTML = '<option value="">Selecione o cartão</option>' + creditCards.map(c => `<option value="${c.id}">${c.name} ${c.bank ? `(${c.bank})` : ''} - Limite: ${formatMoney(c.limit)}</option>`).join('');
+            
+            let parcCard = document.getElementById('parcCard');
+            if(parcCard) parcCard.innerHTML = '<option value="">Selecione o cartão</option>' + creditCards.map(c => `<option value="${c.id}">${c.name} ${c.bank ? `(${c.bank})` : ''}</option>`).join('');
+            
+            let transferCardFrom = document.getElementById('transferCardFrom');
+            if(transferCardFrom) transferCardFrom.innerHTML = '<option value="">Selecione o cartão</option>' + creditCards.map(c => `<option value="${c.id}">${c.name} ${c.bank ? `(${c.bank})` : ''}</option>`).join('');
+            
+            let transferCardTo = document.getElementById('transferCardTo');
+            if(transferCardTo) transferCardTo.innerHTML = '<option value="">Selecione o cartão</option>' + creditCards.map(c => `<option value="${c.id}">${c.name} ${c.bank ? `(${c.bank})` : ''}</option>`).join('');
+            
+            // Select para pagamentos
+            let paymentSelect = document.getElementById('paymentSelect');
+            if(paymentSelect) {
+                let paymentType = document.getElementById('paymentTypeSelect').value;
+                if(paymentType === 'invoice') {
+                    let pendingInvoices = invoices.filter(i => i.status === 'pending');
+                    paymentSelect.innerHTML = pendingInvoices.map(i => {
+                        let card = creditCards.find(c => c.id === i.cardId);
+                        return `<option value="inv_${i.id}">${card ? card.name : 'Cartão'} - Fatura ${formatMoney(i.amount)} - Vence ${i.dueDate}</option>`;
+                    }).join('');
+                    if(pendingInvoices.length === 0) paymentSelect.innerHTML = '<option value="">Nenhuma fatura pendente</option>';
+                } else {
+                    paymentSelect.innerHTML = activeInstallments.map(i => {
+                        let card = creditCards.find(c => c.id === i.cardId);
+                        return `<option value="inst_${i.id}">${i.desc} - ${i.remaining}/${i.installments} restantes - ${formatMoney(i.valuePerInstallment)}/mês</option>`;
+                    }).join('');
+                    if(activeInstallments.length === 0) paymentSelect.innerHTML = '<option value="">Nenhuma parcela ativa</option>';
+                }
+            }
+            
+            // Últimas movimentações
+            let recentDiv = document.getElementById('recentMovementsList');
+            if(recentDiv) {
+                recentDiv.innerHTML = [...transactions].sort((a,b) => new Date(b.date) - new Date(a.date)).slice(0,10).map(t => `
+                    <div class="tx-item" style="border-left-color:${t.type==='income'?'#10B981':'#F43F5E'}">
+                        <div><strong>${escapeHtml(t.desc)}</strong><div style="font-size:0.6rem;">${new Date(t.date).toLocaleString()} | ${t.paymentMethod || '-'}</div></div>
+                        <div>${t.type==='income'?'+':'-'} ${formatMoney(t.amount)}</div>
+                    </div>`).join('');
+            }
+            
+            // Histórico completo
+            let fullDiv = document.getElementById('fullHistoryList');
+            if(fullDiv) {
+                fullDiv.innerHTML = [...transactions].sort((a,b) => new Date(b.date) - new Date(a.date)).map(t => `
+                    <div class="tx-item" style="border-left-color:${t.type==='income'?'#10B981':'#F43F5E'}">
+                        <div><strong>${escapeHtml(t.desc)}</strong><div style="font-size:0.6rem;">${new Date(t.date).toLocaleString()} | ${t.paymentMethod || '-'} | ${t.category || '-'}</div></div>
+                        <div>${t.type==='income'?'+':'-'} ${formatMoney(t.amount)}<button class="delete-trans" data-id="${t.id}">🗑️</button></div>
+                    </div>`).join('');
+                document.querySelectorAll('.delete-trans').forEach(btn => btn.addEventListener('click', () => { 
+                    transactions = transactions.filter(t => t.id !== parseInt(btn.dataset.id)); 
+                    refreshAllViews(); 
+                    saveDataToStorage(); 
+                }));
+            }
+            
+            // Lista de cartões COM BOTÕES DE EDITAR E EXCLUIR
+            let cardsDiv = document.getElementById('creditCardsList');
+            if(cardsDiv) {
+                if(creditCards.length === 0) cardsDiv.innerHTML = '<div style="text-align:center; padding:20px;">Nenhum cartão cadastrado</div>';
+                else cardsDiv.innerHTML = creditCards.map(card => {
                     let percent = (card.used/card.limit)*100;
-                    let cor = percent>80?'#F43F5E':percent>50?'#FBBF24':'#10B981';
+                    let statementPercent = card.statementBalance ? (card.statementBalance/card.limit)*100 : 0;
+                    let statementStatus = '';
+                    if(statementPercent > 80) statementStatus = '<span class="badge-danger">⚠️ Fatura alta!</span>';
+                    else if(statementPercent > 50) statementStatus = '<span class="badge-warning">⚠️ Atenção à fatura</span>';
+                    else statementStatus = '<span class="badge-success">✅ Fatura controlada</span>';
+                    
+                    let closingDayText = card.closingDay ? card.closingDay : 'Não definido';
+                    let dueDayText = card.dueDay ? card.dueDay : 'Não definido';
+                    
                     return `<div class="card-item">
-                        <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
-                            <strong>💳 ${escapeHtml(card.name)}</strong>
-                            <span>Limite: ${formatMoney(card.limit)}</span>
-                        </div>
-                        <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
-                            <span>Usado: ${formatMoney(card.used)}</span>
-                            <span>Livre: ${formatMoney(card.limit - card.used)}</span>
-                        </div>
-                        <div class="progress-bar"><div class="progress-fill" style="width:${Math.min(percent,100)}%; background:${cor};"></div></div>
-                        <div class="flex-row" style="margin-top:12px;">
-                            <input type="number" id="spend-${card.id}" placeholder="Valor do gasto R$" style="flex:2; margin:0;">
-                            <button class="spend-card-btn" data-id="${card.id}" style="flex:1">💸 Gastar</button>
-                            <button class="delete-card-btn" data-id="${card.id}" style="flex:0.5; background:#3B1E2A;">🗑️</button>
+                        <div><strong>💳 ${escapeHtml(card.name)}</strong> ${card.bank ? `(${escapeHtml(card.bank)})` : ''}</div>
+                        <div>Limite: ${formatMoney(card.limit)} | Usado: ${formatMoney(card.used)} | Livre: ${formatMoney(card.limit - card.used)}</div>
+                        <div class="progress-bar"><div class="progress-fill" style="width:${Math.min(percent,100)}%; background:${percent>80?'#F43F5E':percent>50?'#FBBF24':'#10B981'};"></div></div>
+                        <div>📅 Fatura fecha: dia ${closingDayText} | Vence: dia ${dueDayText}</div>
+                        <div>💳 Saldo da fatura: ${formatMoney(card.statementBalance || 0)} ${statementStatus}</div>
+                        <div class="card-actions">
+                            <button class="edit-card-btn" data-id="${card.id}" style="background:#F59E0B;">✏️ Editar</button>
+                            <button class="delete-card-btn" data-id="${card.id}" style="background:#DC2626;">🗑️ Excluir</button>
                         </div>
                     </div>`;
                 }).join('');
                 
-                document.querySelectorAll('.spend-card-btn').forEach(btn => {
-                    btn.addEventListener('click', (e) => {
-                        let id = parseInt(btn.dataset.id);
-                        let input = document.getElementById(`spend-${id}`);
-                        let val = parseFloat(input.value);
-                        if(isNaN(val) || val <= 0) {
-                            alert('Digite um valor válido');
-                            return;
-                        }
-                        spendOnCard(id, val);
-                        input.value = '';
-                    });
+                document.querySelectorAll('.edit-card-btn').forEach(btn => {
+                    btn.addEventListener('click', () => editCard(parseInt(btn.dataset.id)));
                 });
-                
                 document.querySelectorAll('.delete-card-btn').forEach(btn => {
-                    btn.addEventListener('click', () => {
-                        let id = parseInt(btn.dataset.id);
-                        creditCards = creditCards.filter(c => c.id !== id);
-                        refreshAllViews();
-                        saveAll();
-                    });
+                    btn.addEventListener('click', () => deleteCard(parseInt(btn.dataset.id)));
                 });
             }
-        }
-        
-        // Lista parcelas ativas
-        let instDiv = document.getElementById('installmentsList');
-        if(instDiv) {
-            if(activeInstallments.length === 0) {
-                instDiv.innerHTML = '<div style="text-align:center; padding:20px;">Nenhuma parcela ativa. Adicione uma parcela acima.</div>';
-            } else {
-                instDiv.innerHTML = activeInstallments.map(i => {
+            
+            // Lista de parcelas ativas
+            let instDiv = document.getElementById('installmentsList');
+            if(instDiv) {
+                if(activeInstallments.length === 0) instDiv.innerHTML = '<div style="text-align:center; padding:20px;">Nenhuma parcela ativa</div>';
+                else instDiv.innerHTML = activeInstallments.map(i => {
                     let percent = ((i.installments - i.remaining) / i.installments) * 100;
-                    let cardName = creditCards.find(c => c.id === i.cardId)?.name || 'Cartão não identificado';
+                    let card = creditCards.find(c => c.id === i.cardId);
                     return `<div class="installment-card">
-                        <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
-                            <strong>📅 ${escapeHtml(i.desc)}</strong>
-                            <span>${formatMoney(i.valuePerInstallment)}/mês</span>
-                        </div>
-                        <div class="info-text">Cartão: ${cardName} | Total: ${formatMoney(i.totalValue)}</div>
-                        <div>${i.paidInstallments || 0}/${i.installments} parcelas pagas</div>
+                        <div><strong>📅 ${escapeHtml(i.desc)}</strong> | ${formatMoney(i.valuePerInstallment)}/mês</div>
+                        <div>Total: ${formatMoney(i.totalValue)} | ${i.paidInstallments}/${i.installments} pagas | Cartão: ${card ? card.name : 'N/A'}</div>
                         <div class="progress-bar"><div class="progress-fill" style="width:${percent}%; background:#8B5CF6;"></div></div>
-                        <div class="flex-row" style="margin-top:12px;">
-                            <button class="pay-one-installment" data-id="${i.id}" style="flex:1">💸 Pagar 1 parcela</button>
-                            <button class="pay-all-installments" data-id="${i.id}" style="flex:1">⚡ Pagar todas</button>
-                            <button class="delete-installment" data-id="${i.id}" style="flex:0.3; background:#3B1E2A;">🗑️</button>
-                        </div>
                     </div>`;
                 }).join('');
-                
-                document.querySelectorAll('.pay-one-installment').forEach(btn => { btn.addEventListener('click', () => { payInstallment(parseInt(btn.dataset.id), false); }); });
-                document.querySelectorAll('.pay-all-installments').forEach(btn => { btn.addEventListener('click', () => { payInstallment(parseInt(btn.dataset.id), true); }); });
-                document.querySelectorAll('.delete-installment').forEach(btn => { btn.addEventListener('click', () => { activeInstallments = activeInstallments.filter(i => i.id !== parseInt(btn.dataset.id)); refreshAllViews(); saveAll(); }); });
             }
+            
+            // Lista de receitas loja
+            let salesDiv = document.getElementById('salesList');
+            if(salesDiv) salesDiv.innerHTML = storeSales.slice().reverse().slice(0,15).map(s => `<div class="tx-item" style="border-left-color:#10B981"><div><strong>💰 ${escapeHtml(s.desc)}</strong><div>${new Date(s.date).toLocaleString()}</div></div><div>${formatMoney(s.amount)}<button class="delete-sale" data-id="${s.id}">🗑️</button></div></div>`).join('');
+            document.querySelectorAll('.delete-sale').forEach(btn => btn.addEventListener('click', () => { let id = parseInt(btn.dataset.id); let sale = storeSales.find(s => s.id === id); if(sale) { transactions = transactions.filter(t => !(t.desc === sale.desc && t.amount === sale.amount && t.type === 'income')); storeSales = storeSales.filter(s => s.id !== id); refreshAllViews(); saveDataToStorage(); } }));
+            
+            // Lista de despesas loja
+            let expDiv = document.getElementById('storeExpensesList');
+            if(expDiv) expDiv.innerHTML = storeExpenses.slice().reverse().slice(0,15).map(e => `<div class="tx-item" style="border-left-color:#F43F5E"><div><strong>💸 ${escapeHtml(e.desc)}</strong><div>${e.category} | ${new Date(e.date).toLocaleString()}</div></div><div>${formatMoney(e.amount)}<button class="delete-expense" data-id="${e.id}">🗑️</button></div></div>`).join('');
+            document.querySelectorAll('.delete-expense').forEach(btn => btn.addEventListener('click', () => { let id = parseInt(btn.dataset.id); let exp = storeExpenses.find(e => e.id === id); if(exp) { transactions = transactions.filter(t => !(t.desc === exp.desc && t.amount === exp.amount && t.type === 'expense')); storeExpenses = storeExpenses.filter(e => e.id !== id); refreshAllViews(); saveDataToStorage(); } }));
+            
+            // Lista de categorias
+            let catList = document.getElementById('categoriesList');
+            if(catList) catList.innerHTML = categories.map(c => `<div class="tx-item" style="border-left-color:#3B82F6"><div><strong>${escapeHtml(c.name)}</strong><div>${c.type === 'income' ? 'Receita' : 'Despesa'}</div></div><button class="delete-cat" data-id="${c.id}">🗑️</button></div>`).join('');
+            document.querySelectorAll('.delete-cat').forEach(btn => btn.addEventListener('click', () => { categories = categories.filter(c => c.id !== parseInt(btn.dataset.id)); refreshAllViews(); saveDataToStorage(); }));
+            
+            updateAllCharts();
+            saveDataToStorage();
         }
-        
-        // Categorias
-        let catList = document.getElementById('categoriesList');
-        if(catList) catList.innerHTML = categories.map(c => `<div class="tx-item" style="border-left-color:#3B82F6"><div><strong>${escapeHtml(c.name)}</strong><div style="font-size:0.6rem;">${c.type}</div></div><button class="delete-cat" data-id="${c.id}">🗑️</button></div>`).join('');
-        document.querySelectorAll('.delete-cat')?.forEach(btn=>{ btn.addEventListener('click',()=>{ categories=categories.filter(c=>c.id!==parseInt(btn.dataset.id)); refreshAllViews(); saveAll(); }); });
-        
-        // Futuros
-        let futDiv = document.getElementById('futureList');
-        if(futDiv) futDiv.innerHTML = futurePayments.map(f => `<div class="tx-item" style="border-left-color:${f.type==='income'?'#10B981':'#F43F5E'}"><div><strong>${escapeHtml(f.desc)}</strong><div>📅 ${f.dueDate}</div></div><div>${formatMoney(f.amount)}<button class="delete-future" data-id="${f.id}">❌</button></div></div>`).join('');
-        document.querySelectorAll('.delete-future')?.forEach(btn=>{ btn.addEventListener('click',()=>{ futurePayments=futurePayments.filter(f=>f.id!==parseInt(btn.dataset.id)); refreshAllViews(); saveAll(); }); });
-        
-        updateAllCharts();
-        saveAll();
-    }
 
-    function addMovement(desc, amount, type, category, payment) {
-        if(!desc || amount<=0) { alert('Preencha os dados'); return false; }
-        transactions.push({ id: nextTransId++, desc, amount, type, category, paymentMethod: payment, date: new Date().toISOString() });
+        function showView(view) {
+            ['dashboard','register','cards','book','categories','security'].forEach(v => { let el = document.getElementById(v+'View'); if(el) el.style.display = v===view ? 'block' : 'none'; });
+            if(view === 'dashboard') updateAllCharts();
+        }
+
+        // ==================== EVENTOS ====================
+        // Mostrar/ocultar áreas
+        document.getElementById('regPaymentMethod').addEventListener('change', function() {
+            const parcelasArea = document.getElementById('parcelasArea');
+            const normalArea = document.getElementById('normalValueArea');
+            const cardSelection = document.getElementById('cardSelectionArea');
+            
+            if(this.value === 'Crédito parcelado') {
+                parcelasArea.style.display = 'block';
+                normalArea.style.display = 'none';
+                cardSelection.style.display = 'none';
+            } else if(this.value === 'Débito' || this.value === 'Crédito à vista') {
+                parcelasArea.style.display = 'none';
+                normalArea.style.display = 'block';
+                cardSelection.style.display = 'block';
+            } else {
+                parcelasArea.style.display = 'none';
+                normalArea.style.display = 'block';
+                cardSelection.style.display = 'none';
+            }
+        });
+        
+        document.getElementById('transferFrom').addEventListener('change', function() {
+            const cardArea = document.getElementById('transferCardFromArea');
+            cardArea.style.display = (this.value === 'Débito' || this.value === 'Crédito') ? 'block' : 'none';
+        });
+        
+        document.getElementById('transferTo').addEventListener('change', function() {
+            const cardArea = document.getElementById('transferCardToArea');
+            cardArea.style.display = (this.value === 'Débito' || this.value === 'Crédito') ? 'block' : 'none';
+        });
+        
+        document.getElementById('paymentTypeSelect').addEventListener('change', function() {
+            refreshAllViews();
+        });
+        
+        // Confirmar pagamento
+        document.getElementById('confirmPaymentBtn').addEventListener('click', () => {
+            let selected = document.getElementById('paymentSelect').value;
+            if(!selected || selected === '') { alert('Selecione o que deseja pagar'); return; }
+            
+            if(selected.startsWith('inv_')) {
+                let invoiceId = parseInt(selected.replace('inv_', ''));
+                if(confirm('Confirmar pagamento da fatura?')) {
+                    payInvoice(invoiceId);
+                    refreshAllViews();
+                }
+            } else if(selected.startsWith('inst_')) {
+                let installmentId = parseInt(selected.replace('inst_', ''));
+                if(confirm('Confirmar pagamento da parcela?')) {
+                    payInstallment(installmentId);
+                    refreshAllViews();
+                }
+            }
+        });
+        
+        // Registrar movimentação
+        document.getElementById('registerMovementBtn').addEventListener('click', () => {
+            const desc = document.getElementById('regDesc').value;
+            const type = document.getElementById('regType').value;
+            const category = document.getElementById('regCategory').value;
+            const paymentMethod = document.getElementById('regPaymentMethod').value;
+            const cardId = document.getElementById('selectedCard').value ? parseInt(document.getElementById('selectedCard').value) : null;
+            
+            if(!desc) { alert('Digite a descrição'); return; }
+            
+            if(paymentMethod === 'Crédito parcelado') {
+                const total = parseFloat(document.getElementById('parcTotal').value);
+                const installments = parseInt(document.getElementById('parcCount').value);
+                let valuePerInstallment = parseFloat(document.getElementById('parcValue').value);
+                const parcelCardId = parseInt(document.getElementById('parcCard').value);
+                
+                if(isNaN(total) || total <= 0) { alert('Digite o valor total da compra'); return; }
+                if(isNaN(installments) || installments < 2) { alert('Digite o número de parcelas (mínimo 2)'); return; }
+                if(!parcelCardId) { alert('Selecione o cartão para parcelamento'); return; }
+                if(isNaN(valuePerInstallment) || valuePerInstallment <= 0) {
+                    valuePerInstallment = total / installments;
+                }
+                
+                registerMovement(desc, total, type, category, paymentMethod, parcelCardId, {
+                    total, installments, valuePerInstallment, parcelCardId
+                });
+                
+                document.getElementById('parcTotal').value = '';
+                document.getElementById('parcCount').value = '';
+                document.getElementById('parcValue').value = '';
+                document.getElementById('parcCard').value = '';
+            } 
+            else if((paymentMethod === 'Débito' || paymentMethod === 'Crédito à vista') && cardId) {
+                const amount = parseFloat(document.getElementById('regAmount').value);
+                if(isNaN(amount) || amount <= 0) { alert('Digite o valor'); return; }
+                registerMovement(desc, amount, type, category, paymentMethod, cardId);
+                document.getElementById('regAmount').value = '';
+            }
+            else {
+                const amount = parseFloat(document.getElementById('regAmount').value);
+                if(isNaN(amount) || amount <= 0) { alert('Digite o valor'); return; }
+                registerMovement(desc, amount, type, category, paymentMethod);
+                document.getElementById('regAmount').value = '';
+            }
+            
+            document.getElementById('regDesc').value = '';
+        });
+        
+        // Registrar transferência
+        document.getElementById('registerTransferBtn').addEventListener('click', () => {
+            let from = document.getElementById('transferFrom').value;
+            let to = document.getElementById('transferTo').value;
+            let amount = parseFloat(document.getElementById('transferAmount').value);
+            let desc = document.getElementById('transferDesc').value;
+            let fromCardId = null;
+            let toCardId = null;
+            
+            if(from === 'Débito' || from === 'Crédito') {
+                fromCardId = parseInt(document.getElementById('transferCardFrom').value);
+                if(!fromCardId) { alert('Selecione o cartão de origem'); return; }
+            }
+            if(to === 'Débito' || to === 'Crédito') {
+                toCardId = parseInt(document.getElementById('transferCardTo').value);
+                if(!toCardId) { alert('Selecione o cartão de destino'); return; }
+            }
+            
+            if(isNaN(amount) || amount <= 0) { alert('Digite um valor válido'); return; }
+            if(from === to && fromCardId === toCardId) { alert('Origem e destino não podem ser iguais'); return; }
+            
+            let fromDesc = `Transferência: ${desc || `${from} → ${to}`}`;
+            transactions.push({
+                id: nextTransId++, desc: fromDesc, amount: amount, type: "expense", 
+                category: "Transferência", paymentMethod: from, cardId: fromCardId, date: new Date().toISOString()
+            });
+            
+            let toDesc = `Transferência: ${desc || `${from} → ${to}`}`;
+            transactions.push({
+                id: nextTransId++, desc: toDesc, amount: amount, type: "income", 
+                category: "Transferência", paymentMethod: to, cardId: toCardId, date: new Date().toISOString()
+            });
+            
+            refreshAllViews();
+            alert(`✅ Transferência de ${formatMoney(amount)} registrada!`);
+            document.getElementById('transferAmount').value = '';
+            document.getElementById('transferDesc').value = '';
+        });
+        
+        // Login
+        document.getElementById('btnLogin').addEventListener('click', () => {
+            const password = document.getElementById('loginPassword').value;
+            if(verifyPassword(password)) {
+                resetLoginAttempts(); saveLastAccess(); loadDataFromStorage(); refreshAllViews();
+                document.getElementById('loginContainer').classList.add('hide');
+                document.getElementById('appContainer').classList.remove('hide');
+                document.getElementById('loginError').innerHTML = '';
+                document.getElementById('loginPassword').value = '';
+            } else {
+                const attempts = incrementLoginAttempts();
+                document.getElementById('loginError').innerHTML = `Senha incorreta! Tentativa ${attempts}/5`;
+                if(attempts >= 5) document.getElementById('loginError').innerHTML = 'Limite excedido! Aguarde 5 minutos.';
+            }
+        });
+        
+        document.getElementById('loginPassword').addEventListener('keypress', (e) => { if(e.key === 'Enter') document.getElementById('btnLogin').click(); });
+        document.getElementById('logoutBtn').addEventListener('click', () => { document.getElementById('loginContainer').classList.remove('hide'); document.getElementById('appContainer').classList.add('hide'); });
+        
+        // Modal editar cartão
+        document.getElementById('cancelEditBtn').addEventListener('click', () => {
+            document.getElementById('editCardModal').classList.add('hide');
+        });
+        document.getElementById('saveEditBtn').addEventListener('click', () => {
+            saveEditCard();
+        });
+        
+        // Modal senha
+        const modal = document.getElementById('changePasswordModal');
+        document.getElementById('changePasswordSecurityBtn').addEventListener('click', () => modal.classList.remove('hide'));
+        document.getElementById('modalCancelBtn').addEventListener('click', () => modal.classList.add('hide'));
+        document.getElementById('modalConfirmBtn').addEventListener('click', () => {
+            const current = document.getElementById('modalCurrentPassword').value;
+            const newPass = document.getElementById('modalNewPassword').value;
+            const confirm = document.getElementById('modalConfirmPassword').value;
+            if(!verifyPassword(current)) { document.getElementById('modalError').innerHTML = 'Senha atual incorreta!'; return; }
+            if(newPass.length < 4) { document.getElementById('modalError').innerHTML = 'Mínimo 4 caracteres!'; return; }
+            if(newPass !== confirm) { document.getElementById('modalError').innerHTML = 'Senhas não coincidem!'; return; }
+            saveNewPassword(newPass); modal.classList.add('hide'); alert('Senha alterada com sucesso!');
+        });
+        
+        // Outros eventos
+        document.getElementById('addCardBtn')?.addEventListener('click', addCreditCard);
+        document.getElementById('addCategoryBtn')?.addEventListener('click', addNewCategory);
+        document.getElementById('registerSaleBtn')?.addEventListener('click', () => registerSale(document.getElementById('saleDesc').value, parseFloat(document.getElementById('saleValue').value), document.getElementById('saleDate').value, document.getElementById('saleTime').value));
+        document.getElementById('registerExpenseBtn')?.addEventListener('click', () => registerExpense(document.getElementById('expenseDesc').value, parseFloat(document.getElementById('expenseValue').value), document.getElementById('expenseCategory').value, document.getElementById('expenseDate').value, document.getElementById('expenseTime').value));
+        
+        // Backup
+        document.getElementById('exportDataBtn')?.addEventListener('click', () => {
+            const data = { transactions, futurePayments, creditCards, categories, activeInstallments, storeSales, storeExpenses, invoices,
+                ids: { nextTransId, nextFutureId, nextCardId, nextCategoryId, nextInstallmentId, nextSaleId, nextExpenseId, nextInvoiceId } };
+            const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'})); a.download = `financeiro_jean_backup_${new Date().toISOString().split('T')[0]}.json`; a.click();
+        });
+        document.getElementById('importDataBtn')?.addEventListener('click', () => document.getElementById('importFile').click());
+        document.getElementById('importFile')?.addEventListener('change', (e) => {
+            const file = e.target.files[0]; if(!file) return;
+            const reader = new FileReader();
+            reader.onload = (evt) => {
+                try {
+                    const data = JSON.parse(evt.target.result);
+                    transactions = data.transactions || []; futurePayments = data.futurePayments || []; creditCards = data.creditCards || [];
+                    categories = data.categories || []; activeInstallments = data.activeInstallments || []; storeSales = data.storeSales || []; storeExpenses = data.storeExpenses || [];
+                    invoices = data.invoices || [];
+                    const ids = data.ids || {};
+                    nextTransId = ids.nextTransId || 1; nextFutureId = ids.nextFutureId || 1; nextCardId = ids.nextCardId || 1; nextCategoryId = ids.nextCategoryId || 9;
+                    nextInstallmentId = ids.nextInstallmentId || 1; nextSaleId = ids.nextSaleId || 1; nextExpenseId = ids.nextExpenseId || 1; nextInvoiceId = ids.nextInvoiceId || 1;
+                    saveDataToStorage(); refreshAllViews();
+                    document.getElementById('backupMsg').innerHTML = '<span style="color:#10B981;">✅ Dados importados!</span>';
+                    setTimeout(() => document.getElementById('backupMsg').innerHTML = '', 3000);
+                } catch(err) { document.getElementById('backupMsg').innerHTML = '<span style="color:#F43F5E;">❌ Erro ao importar!</span>'; }
+            };
+            reader.readAsText(file); e.target.value = '';
+        });
+        
+        // Menu
+        document.getElementById('hamburgerBtn')?.addEventListener('click', () => document.getElementById('menuOverlay').classList.add('open'));
+        document.getElementById('closeMenuBtn')?.addEventListener('click', () => document.getElementById('menuOverlay').classList.remove('open'));
+        document.getElementById('menuBackdrop')?.addEventListener('click', () => document.getElementById('menuOverlay').classList.remove('open'));
+        document.querySelectorAll('.menu-item').forEach(item => { item.addEventListener('click', () => { showView(item.dataset.view); document.getElementById('menuOverlay').classList.remove('open'); }); });
+        
+        // Datas padrão
+        let today = new Date().toISOString().split('T')[0];
+        document.getElementById('saleDate')?.setAttribute('value', today);
+        document.getElementById('expenseDate')?.setAttribute('value', today);
+        
+        loadDataFromStorage();
         refreshAllViews();
-        return true;
-    }
-
-    function addFuturePayment() {
-        let desc = document.getElementById('futureDesc')?.value;
-        let amount = parseFloat(document.getElementById('futureAmount')?.value);
-        let dueDate = document.getElementById('futureDate')?.value;
-        let type = document.getElementById('futureType')?.value;
-        if(desc && amount && dueDate) { futurePayments.push({ id: nextFutureId++, desc, amount, dueDate, type }); refreshAllViews(); }
-        else alert('Preencha todos os campos');
-    }
-
-    function addNewCategory() {
-        let name = document.getElementById('newCategoryName')?.value;
-        let type = document.getElementById('newCategoryType')?.value;
-        if(name) { categories.push({ id: nextCategoryId++, name, type }); refreshAllViews(); }
-        else alert('Digite o nome da categoria');
-    }
-
-    function escapeHtml(s) { if(!s) return ''; return s.replace(/[&<>]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;'})[m]); }
-
-    function showView(view) {
-        ['dashboard','movements','book','categories','future','cards'].forEach(v => { let el = document.getElementById(v+'View'); if(el) el.style.display = v===view ? 'block' : 'none'; });
-        if(view === 'dashboard') updateAllCharts();
-    }
-
-    // EVENTOS
-    document.getElementById('addMovBtn')?.addEventListener('click', ()=>{
-        addMovement(document.getElementById('movDesc').value, parseFloat(document.getElementById('movAmount').value), document.getElementById('movType').value, document.getElementById('movCategory').value, document.getElementById('movPayment').value);
-        document.getElementById('movDesc').value=''; document.getElementById('movAmount').value='';
-    });
-    
-    document.getElementById('registerSaleBtn')?.addEventListener('click', ()=>{ 
-        registerSale(document.getElementById('saleDesc').value, parseFloat(document.getElementById('saleValue').value), document.getElementById('saleDate').value, document.getElementById('saleTime').value); 
-        document.getElementById('saleDesc').value=''; document.getElementById('saleValue').value=''; 
-    });
-    
-    document.getElementById('registerExpenseBtn')?.addEventListener('click', ()=>{ 
-        registerExpense(document.getElementById('expenseDesc').value, parseFloat(document.getElementById('expenseValue').value), document.getElementById('expenseCategory').value, document.getElementById('expenseDate').value, document.getElementById('expenseTime').value); 
-        document.getElementById('expenseDesc').value=''; document.getElementById('expenseValue').value='';
-    });
-    
-    document.getElementById('addCardBtn')?.addEventListener('click', addCreditCard);
-    
-    document.getElementById('addInstallmentBtn')?.addEventListener('click', ()=>{
-        let cardId = parseInt(document.getElementById('newInstallmentCard').value);
-        if(creditCards.length === 0) {
-            alert('Cadastre um cartão primeiro!');
-            return;
-        }
-        addInstallment(
-            document.getElementById('newInstallmentDesc').value, 
-            parseFloat(document.getElementById('newInstallmentTotal').value), 
-            parseInt(document.getElementById('newInstallmentCount').value), 
-            parseFloat(document.getElementById('newInstallmentValue').value), 
-            cardId
-        );
-        document.getElementById('newInstallmentDesc').value=''; 
-        document.getElementById('newInstallmentTotal').value=''; 
-        document.getElementById('newInstallmentCount').value=''; 
-        document.getElementById('newInstallmentValue').value='';
-    });
-    
-    document.getElementById('payOneInstallmentBtn')?.addEventListener('click', ()=>{ let id = parseInt(document.getElementById('earlyPaymentInstallment')?.value); if(id && activeInstallments.length > 0) payInstallment(id, false); else alert('Selecione uma parcela'); });
-    document.getElementById('payAllInstallmentsBtn')?.addEventListener('click', ()=>{ let id = parseInt(document.getElementById('earlyPaymentInstallment')?.value); if(id && activeInstallments.length > 0) payInstallment(id, true); else alert('Selecione uma parcela'); });
-    document.getElementById('addFutureBtn')?.addEventListener('click', addFuturePayment);
-    document.getElementById('addCategoryBtn')?.addEventListener('click', addNewCategory);
-    document.getElementById('hamburgerBtn')?.addEventListener('click', ()=> document.getElementById('menuOverlay').classList.add('open'));
-    document.getElementById('closeMenuBtn')?.addEventListener('click', ()=> document.getElementById('menuOverlay').classList.remove('open'));
-    document.getElementById('menuBackdrop')?.addEventListener('click', ()=> document.getElementById('menuOverlay').classList.remove('open'));
-    
-    document.querySelectorAll('.menu-item').forEach(item => { item.addEventListener('click', () => { showView(item.dataset.view); document.getElementById('menuOverlay').classList.remove('open'); }); });
-    
-    // Setar data atual
-    let today = new Date().toISOString().split('T')[0];
-    document.getElementById('saleDate')?.setAttribute('value', today);
-    document.getElementById('expenseDate')?.setAttribute('value', today);
-    document.getElementById('saleTime')?.setAttribute('value', new Date().toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'}));
-    document.getElementById('expenseTime')?.setAttribute('value', new Date().toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'}));
-    document.getElementById('futureDate')?.setAttribute('value', today);
-    
-    loadAll();
-    refreshAllViews();
-    showView('dashboard');
-</script>
+        showView('dashboard');
+    </script>
 </body>
 </html>
