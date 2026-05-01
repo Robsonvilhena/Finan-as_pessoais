@@ -103,10 +103,7 @@
 <body>
 <div id="loginContainer" class="login-container">
     <div class="login-card">
-        <div class="login-logo">
-            <h1>FINANCEIRO JEAN</h1>
-            <p>SISTEMA SEGURO</p>
-        </div>
+        <div class="login-logo"><h1>FINANCEIRO JEAN</h1><p>SISTEMA SEGURO</p></div>
         <div class="input-group"><input type="text" id="loginUsername" placeholder="Usuário" value="Jean" readonly style="background:#1E293B; opacity:0.8;"></div>
         <div class="input-group"><input type="password" id="loginPassword" placeholder="Senha" autocomplete="off"><span class="password-toggle" onclick="togglePassword()">👁️</span></div>
         <button id="btnLogin" class="btn-login">Entrar</button>
@@ -115,7 +112,7 @@
     </div>
 </div>
 
-<div id="savingsModal" class="modal hide"><div class="modal-content"><h3 id="savingsModalTitle">➕ NOVA POUPANÇA</h3><input type="text" id="savingsName" placeholder="Nome"><input type="number" id="savingsAmount" placeholder="Saldo inicial R$" step="0.01" value="0"><input type="text" id="savingsGoal" placeholder="Objetivo"><input type="color" id="savingsColor" value="#EC4899" style="height:45px;"><input type="hidden" id="savingsEditId"><div class="modal-buttons"><button id="savingsModalCancel" class="btn-danger">Cancelar</button><button id="savingsModalSave" class="btn-success">Salvar</button></div></div></div>
+<div id="savingsModal" class="modal hide"><div class="modal-content"><h3 id="savingsModalTitle">➕ NOVA POUPANÇA</h3><input type="text" id="savingsName" placeholder="Nome da poupança"><input type="number" id="savingsAmount" placeholder="Saldo inicial R$" step="0.01" value="0"><input type="number" id="savingsGoal" placeholder="Objetivo (opcional)" step="0.01"><input type="color" id="savingsColor" value="#EC4899" style="height:45px;"><input type="hidden" id="savingsEditId"><div class="modal-buttons"><button id="savingsModalCancel" class="btn-danger">Cancelar</button><button id="savingsModalSave" class="btn-success">Salvar</button></div></div></div>
 
 <div id="goalModal" class="modal hide"><div class="modal-content"><h3 id="goalModalTitle">🎯 NOVA META</h3><input type="text" id="goalName" placeholder="Nome da meta"><input type="number" id="goalTarget" placeholder="Valor objetivo R$" step="0.01"><input type="number" id="goalCurrent" placeholder="Valor atual R$" step="0.01" value="0"><input type="date" id="goalDeadline" placeholder="Data limite"><input type="color" id="goalColor" value="#F97316" style="height:45px;"><input type="hidden" id="goalEditId"><div class="modal-buttons"><button id="goalModalCancel" class="btn-danger">Cancelar</button><button id="goalModalSave" class="btn-success">Salvar</button></div></div></div>
 
@@ -124,10 +121,7 @@
 <div id="appContainer" class="app-container">
     <div class="menu-backdrop" id="menuBackdrop"></div>
     <div class="menu-overlay" id="menuOverlay">
-        <div class="menu-header">
-            <h3>MENU</h3>
-            <button class="close-menu" id="closeMenuBtn">✕</button>
-        </div>
+        <div class="menu-header"><h3>MENU</h3><button class="close-menu" id="closeMenuBtn">✕</button></div>
         <div class="menu-item active" data-view="dashboard">🏠 Dashboard</div>
         <div class="menu-item" data-view="register">📝 Registrar Movimentação</div>
         <div class="menu-item" data-view="history">📋 Histórico</div>
@@ -191,8 +185,14 @@
         <!-- HISTÓRICO -->
         <div id="historyView" style="display:none;"><div class="section-card"><div class="section-title">📋 HISTÓRICO COMPLETO</div><div id="fullHistoryList" class="tx-list"></div></div></div>
 
-        <!-- POUPANÇAS -->
-        <div id="savingsView" style="display:none;"><div class="section-card"><div class="section-title">💰 MINHAS POUPANÇAS</div><button id="addSavingsBtn" class="btn-pink" style="width:100%; margin-bottom:16px;">➕ Criar Nova Poupança</button><div id="savingsList"></div></div></div>
+        <!-- POUPANÇAS (CORRIGIDAS) -->
+        <div id="savingsView" style="display:none;">
+            <div class="section-card">
+                <div class="section-title">💰 MINHAS POUPANÇAS</div>
+                <button id="addSavingsBtn" class="btn-pink" style="width:100%; margin-bottom:16px;">➕ Criar Nova Poupança</button>
+                <div id="savingsList"></div>
+            </div>
+        </div>
 
         <!-- METAS FINANCEIRAS -->
         <div id="goalsView" style="display:none;"><div class="section-card"><div class="section-title">🎯 MINHAS METAS</div><button id="addGoalBtn" class="btn-orange" style="width:100%; margin-bottom:16px;">➕ Criar Nova Meta</button><div id="goalsList"></div></div></div>
@@ -283,7 +283,11 @@ function loadData() {
         creditCards = [{ id: 1, name: "Nubank", limit: 5000, used: 1250, bank: "Nubank", closingDay: 10, dueDay: 5, statementBalance: 1250 }];
         storeSales = [{ id: 1, desc: "Venda Camiseta", amount: 250, date: new Date().toISOString() }];
         storeExpenses = [{ id: 1, desc: "Compra mercadoria", amount: 300, category: "Mercadoria", date: new Date().toISOString() }];
-        savings = [{ id: 1, name: "Reserva Emergência", amount: 5000, goal: 20000, color: "#EC4899", createdAt: new Date().toISOString() }, { id: 2, name: "Viagem", amount: 1200, goal: 5000, color: "#06B6D4", createdAt: new Date().toISOString() }];
+        // Dados de exemplo para poupanças (corrigidos)
+        savings = [
+            { id: 1, name: "Reserva Emergência", amount: 5000, goal: 20000, color: "#EC4899", createdAt: new Date().toISOString() },
+            { id: 2, name: "Viagem", amount: 1200, goal: 5000, color: "#06B6D4", createdAt: new Date().toISOString() }
+        ];
         financialGoals = [{ id: 1, name: "Comprar Carro", targetAmount: 50000, currentAmount: 10000, deadline: "2026-12-31", color: "#F97316", createdAt: new Date().toISOString() }];
         saveData();
     }
@@ -302,10 +306,38 @@ function addGoal(name, targetAmount, currentAmount, deadline, color) { if (!name
 function updateGoal(id, name, targetAmount, currentAmount, deadline, color) { let g = financialGoals.find(g => g.id === id); if (g) { g.name = name; g.targetAmount = targetAmount; g.currentAmount = currentAmount; g.deadline = deadline; g.color = color; refreshAllViews(); } }
 function deleteGoal(id) { if (confirm('Excluir meta?')) { financialGoals = financialGoals.filter(g => g.id !== id); refreshAllViews(); } }
 
-// FUNÇÕES DE POUPANÇA
-function addSavings(name, amount, goal, color) { if (!name) { alert('Nome da poupança'); return false; } savings.push({ id: nextSavingsId++, name, amount: amount || 0, goal: goal || null, color: color || "#EC4899", createdAt: new Date().toISOString() }); refreshAllViews(); return true; }
-function updateSavings(id, name, amount, goal, color) { let s = savings.find(s => s.id === id); if (s) { s.name = name; s.amount = amount || 0; s.goal = goal || null; s.color = color; refreshAllViews(); } }
-function deleteSavings(id) { if (confirm('Excluir poupança?')) { savings = savings.filter(s => s.id !== id); refreshAllViews(); } }
+// FUNÇÕES DE POUPANÇA (CORRIGIDAS - SEM NaN)
+function addSavings(name, amount, goal, color) { 
+    if (!name) { alert('Digite o nome da poupança'); return false; } 
+    savings.push({ 
+        id: nextSavingsId++, 
+        name: name, 
+        amount: amount || 0, 
+        goal: (goal && goal > 0) ? goal : null, 
+        color: color || "#EC4899", 
+        createdAt: new Date().toISOString() 
+    }); 
+    refreshAllViews(); 
+    return true; 
+}
+
+function updateSavings(id, name, amount, goal, color) { 
+    let s = savings.find(s => s.id === id); 
+    if (s) { 
+        s.name = name; 
+        s.amount = amount || 0; 
+        s.goal = (goal && goal > 0) ? goal : null; 
+        s.color = color; 
+        refreshAllViews(); 
+    } 
+}
+
+function deleteSavings(id) { 
+    if (confirm('Tem certeza que deseja excluir esta poupança?')) { 
+        savings = savings.filter(s => s.id !== id); 
+        refreshAllViews(); 
+    } 
+}
 
 function registerMovement(desc, amount, type, category, paymentMethod, cardId = null, parcelData = null, photoBase64 = null) {
     if (!desc || amount <= 0) { alert('Preencha descrição e valor'); return false; }
@@ -461,10 +493,46 @@ function refreshAllViews() {
     let tSavTo = document.getElementById('transferSavingsTo'); if (tSavTo) tSavTo.innerHTML = '<option value="">Selecione</option>' + savings.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
     let paySelect = document.getElementById('paymentSelect'); if (paySelect) { let type = document.getElementById('paymentTypeSelect').value; if (type === 'invoice') { let pending = invoices.filter(i => i.status === 'pending'); paySelect.innerHTML = pending.map(i => { let card = creditCards.find(c => c.id === i.cardId); return `<option value="inv_${i.id}">${card ? card.name : 'Cartão'} - Fatura ${formatMoney(i.amount)} - Vence ${i.dueDate}</option>`; }).join(''); if (pending.length === 0) paySelect.innerHTML = '<option value="">Nenhuma fatura</option>'; } else { paySelect.innerHTML = activeInstallments.map(i => { let card = creditCards.find(c => c.id === i.cardId); return `<option value="inst_${i.id}">${i.desc} - ${i.remaining}/${i.installments} - ${formatMoney(i.valuePerInstallment)}/mês</option>`; }).join(''); if (activeInstallments.length === 0) paySelect.innerHTML = '<option value="">Nenhuma parcela</option>'; } }
 
-    // POUPANÇAS
-    let savDiv = document.getElementById('savingsList'); if (savDiv) { if (savings.length === 0) savDiv.innerHTML = '<div style="text-align:center;padding:20px;">Nenhuma poupança</div>'; else savDiv.innerHTML = savings.map(s => { let percent = s.goal ? (s.amount / s.goal) * 100 : 0; return `<div class="savings-card" style="border-left:3px solid ${s.color};"><div style="display:flex;justify-content:space-between;"><div><strong>${escapeHtml(s.name)}</strong></div><div><button class="edit-savings" data-id="${s.id}" style="background:#3B82F6;">✏️</button><button class="delete-savings" data-id="${s.id}" style="background:#F43F5E;">🗑️</button></div></div><div>💰 ${formatMoney(s.amount || 0)}</div>${s.goal ? `<div>🎯 Objetivo: ${formatMoney(s.goal)}</div><div class="progress-bar"><div class="progress-fill" style="width:${Math.min(percent, 100)}%; background:${s.color};"></div></div>` : ''}</div>`; }).join(''); 
-        document.querySelectorAll('.edit-savings').forEach(btn => btn.addEventListener('click', () => { let id = parseInt(btn.dataset.id); let s = savings.find(s => s.id === id); if (s) { document.getElementById('savingsModalTitle').innerHTML = '✏️ EDITAR'; document.getElementById('savingsName').value = s.name; document.getElementById('savingsAmount').value = s.amount; document.getElementById('savingsGoal').value = s.goal || ''; document.getElementById('savingsColor').value = s.color; document.getElementById('savingsEditId').value = s.id; document.getElementById('savingsModal').classList.remove('hide'); } })); 
-        document.querySelectorAll('.delete-savings').forEach(btn => btn.addEventListener('click', () => deleteSavings(parseInt(btn.dataset.id)))); }
+    // POUPANÇAS (CORRIGIDAS - SEM NaN)
+    let savDiv = document.getElementById('savingsList'); 
+    if (savDiv) { 
+        if (savings.length === 0) {
+            savDiv.innerHTML = '<div style="text-align:center;padding:20px;">Nenhuma poupança criada</div>'; 
+        } else { 
+            savDiv.innerHTML = savings.map(s => { 
+                let percent = (s.goal && s.goal > 0) ? (s.amount / s.goal) * 100 : 0;
+                let goalText = (s.goal && s.goal > 0) ? `🎯 Objetivo: ${formatMoney(s.goal)}` : '🎯 Sem objetivo definido';
+                return `<div class="savings-card" style="border-left:3px solid ${s.color};">
+                    <div style="display:flex;justify-content:space-between; align-items:center;">
+                        <div><strong>${escapeHtml(s.name)}</strong></div>
+                        <div style="display:flex; gap:8px;">
+                            <button class="edit-savings" data-id="${s.id}" style="background:#3B82F6; padding:6px 12px; border-radius:20px;">✏️ Editar</button>
+                            <button class="delete-savings" data-id="${s.id}" style="background:#F43F5E; padding:6px 12px; border-radius:20px;">🗑️ Excluir</button>
+                        </div>
+                    </div>
+                    <div>💰 Saldo: ${formatMoney(s.amount || 0)}</div>
+                    <div>${goalText}</div>
+                    ${(s.goal && s.goal > 0) ? `<div class="progress-bar"><div class="progress-fill" style="width:${Math.min(percent, 100)}%; background:${s.color};"></div></div><div>📊 ${percent.toFixed(1)}% concluído</div>` : ''}
+                </div>`; 
+            }).join(''); 
+        }
+        
+        document.querySelectorAll('.edit-savings').forEach(btn => btn.addEventListener('click', () => { 
+            let id = parseInt(btn.dataset.id); 
+            let s = savings.find(s => s.id === id); 
+            if (s) { 
+                document.getElementById('savingsModalTitle').innerHTML = '✏️ EDITAR POUPANÇA'; 
+                document.getElementById('savingsName').value = s.name; 
+                document.getElementById('savingsAmount').value = s.amount; 
+                document.getElementById('savingsGoal').value = s.goal || ''; 
+                document.getElementById('savingsColor').value = s.color; 
+                document.getElementById('savingsEditId').value = s.id; 
+                document.getElementById('savingsModal').classList.remove('hide'); 
+            } 
+        })); 
+        
+        document.querySelectorAll('.delete-savings').forEach(btn => btn.addEventListener('click', () => deleteSavings(parseInt(btn.dataset.id)))); 
+    }
 
     // METAS
     let goalsDiv = document.getElementById('goalsList'); if (goalsDiv) { if (financialGoals.length === 0) goalsDiv.innerHTML = '<div style="text-align:center;padding:20px;">Nenhuma meta cadastrada</div>'; else goalsDiv.innerHTML = financialGoals.map(g => { let percent = (g.currentAmount / g.targetAmount) * 100; let daysLeft = g.deadline ? Math.ceil((new Date(g.deadline) - new Date()) / (1000 * 60 * 60 * 24)) : null; return `<div class="goal-card" style="border-left:3px solid ${g.color};"><div style="display:flex;justify-content:space-between;"><div><strong>🎯 ${escapeHtml(g.name)}</strong></div><div><button class="edit-goal" data-id="${g.id}" style="background:#3B82F6;">✏️</button><button class="delete-goal" data-id="${g.id}" style="background:#F43F5E;">🗑️</button></div></div><div>💰 Atual: ${formatMoney(g.currentAmount)} de ${formatMoney(g.targetAmount)}</div><div class="progress-bar"><div class="progress-fill" style="width:${Math.min(percent, 100)}%; background:${g.color};"></div></div><div>📊 ${percent.toFixed(1)}% concluída</div>${daysLeft !== null ? `<div>⏰ ${daysLeft} dias restantes</div>` : ''}</div>`; }).join('');
@@ -546,8 +614,30 @@ function iniciarApp() {
     });
     
     // POUPANÇAS
-    document.getElementById('addSavingsBtn')?.addEventListener('click', () => { document.getElementById('savingsModalTitle').innerHTML = '➕ NOVA POUPANÇA'; document.getElementById('savingsName').value = ''; document.getElementById('savingsAmount').value = '0'; document.getElementById('savingsGoal').value = ''; document.getElementById('savingsColor').value = '#EC4899'; document.getElementById('savingsEditId').value = ''; document.getElementById('savingsModal').classList.remove('hide'); });
-    document.getElementById('savingsModalSave')?.addEventListener('click', () => { let name = document.getElementById('savingsName').value; let amount = parseFloat(document.getElementById('savingsAmount').value) || 0; let goal = document.getElementById('savingsGoal').value; let color = document.getElementById('savingsColor').value; let editId = document.getElementById('savingsEditId').value; if (editId) updateSavings(parseInt(editId), name, amount, goal, color); else addSavings(name, amount, goal, color); document.getElementById('savingsModal').classList.add('hide'); });
+    document.getElementById('addSavingsBtn')?.addEventListener('click', () => { 
+        document.getElementById('savingsModalTitle').innerHTML = '➕ NOVA POUPANÇA'; 
+        document.getElementById('savingsName').value = ''; 
+        document.getElementById('savingsAmount').value = '0'; 
+        document.getElementById('savingsGoal').value = ''; 
+        document.getElementById('savingsColor').value = '#EC4899'; 
+        document.getElementById('savingsEditId').value = ''; 
+        document.getElementById('savingsModal').classList.remove('hide'); 
+    });
+    
+    document.getElementById('savingsModalSave')?.addEventListener('click', () => { 
+        let name = document.getElementById('savingsName').value; 
+        let amount = parseFloat(document.getElementById('savingsAmount').value) || 0; 
+        let goal = parseFloat(document.getElementById('savingsGoal').value) || null; 
+        let color = document.getElementById('savingsColor').value; 
+        let editId = document.getElementById('savingsEditId').value; 
+        if (editId) {
+            updateSavings(parseInt(editId), name, amount, goal, color); 
+        } else { 
+            addSavings(name, amount, goal, color); 
+        }
+        document.getElementById('savingsModal').classList.add('hide'); 
+    });
+    
     document.getElementById('savingsModalCancel')?.addEventListener('click', () => document.getElementById('savingsModal').classList.add('hide'));
     
     // METAS
