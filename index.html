@@ -122,7 +122,7 @@
         </div>
         <div id="registerForm" style="display:none;">
             <div class="input-group"><input type="email" id="registerEmail" placeholder="E-mail"></div>
-            <div class="input-group"><input type="password" id="registerPassword" placeholder="Senha (mínimo 6 caracteres)"><span class="password-toggle" onclick="toggleRegisterPassword()">👁️</span></div>
+            <div class="input-group"><input type="password" id="registerPassword" placeholder="Senha (mínimo 6)"><span class="password-toggle" onclick="toggleRegisterPassword()">👁️</span></div>
             <div class="input-group"><input type="password" id="registerConfirmPassword" placeholder="Confirmar senha"><span class="password-toggle" onclick="toggleRegisterConfirmPassword()">👁️</span></div>
             <button id="btnRegister" class="btn-login">Criar Conta</button>
             <button id="btnBackToLogin" class="btn-login btn-login-outline">Voltar</button>
@@ -157,7 +157,7 @@
             <div class="logo-area"><h1>FINANCEIRO JEAN</h1></div>
             <div class="user-info"><span class="user-email" id="userEmail"></span><button id="logoutBtn" class="logout-btn">Sair</button></div>
         </div>
-        <div class="sync-status" id="syncStatus">🔄 Sincronizando...</div>
+        <div class="sync-status" id="syncStatus">🔄 Conectando...</div>
 
         <!-- DASHBOARD -->
         <div id="dashboardView">
@@ -239,6 +239,7 @@
         <!-- CONFIGURAÇÕES -->
         <div id="configView" style="display:none;">
             <div class="section-card"><div class="section-title">🔐 SEGURANÇA</div><button id="changePasswordSecurityBtn" class="btn-primary">🔑 Alterar Senha</button></div>
+            <div class="section-card"><div class="section-title">🗑️ ZERAR DADOS</div><button id="resetAllDataBtn" class="btn-danger">⚠️ Zerar Todas as Transações</button><div class="info-text">Esta ação não pode ser desfeita. Todas as movimentações, poupanças, metas e cartões serão apagados.</div></div>
             <div class="section-card"><div class="section-title">📋 CATEGORIAS</div><div class="flex-row"><input type="text" id="newCategoryName" placeholder="Nome da categoria" style="flex:2"><select id="newCategoryType" style="flex:1"><option value="expense">Despesa</option><option value="income">Receita</option></select><button id="addCategoryBtn" class="btn-primary">Adicionar</button></div><div id="categoriesList" class="tx-list" style="margin-top:12px;"></div></div>
             <div class="section-card"><div class="section-title">📤 EXPORTAR DADOS</div><div class="export-buttons"><button id="exportExcelBtn" class="btn-success">📊 Excel</button><button id="exportGoogleBtn" class="btn-primary">📤 Google Sheets</button></div></div>
             <div class="section-card"><div class="section-title">💾 BACKUP LOCAL</div><div class="flex-row"><button id="exportDataBtn" class="btn-primary">📤 Exportar Backup</button><button id="importDataBtn" class="btn-warning">📥 Importar Backup</button></div><input type="file" id="importFile" style="display:none;" accept=".json"><div id="backupMsg" class="info-text"></div></div>
@@ -257,6 +258,7 @@ const firebaseConfig = {
     appId: "1:319621531820:web:bc979555e4c8bcee28f709"
 };
 
+// Inicializar Firebase
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
@@ -286,14 +288,14 @@ async function saveToFirebase() {
                    nextSaleId, nextExpenseId, nextInvoiceId, nextSavingsId, nextGoalId },
             updatedAt: firebase.firestore.FieldValue.serverTimestamp()
         }, { merge: true });
-        document.getElementById('syncStatus').innerHTML = '✅ Sincronizado com a nuvem';
+        document.getElementById('syncStatus').innerHTML = '✅ Sincronizado';
         setTimeout(() => {
             if(document.getElementById('syncStatus')) 
-                document.getElementById('syncStatus').innerHTML = '☁️ Dados na nuvem';
+                document.getElementById('syncStatus').innerHTML = '☁️ Nuvem';
         }, 3000);
     } catch (error) {
         console.error('Erro ao salvar:', error);
-        document.getElementById('syncStatus').innerHTML = '⚠️ Erro na sincronização';
+        document.getElementById('syncStatus').innerHTML = '⚠️ Erro';
     }
 }
 
@@ -301,7 +303,7 @@ async function loadFromFirebase() {
     if (!currentUser) return;
     try {
         isSyncing = true;
-        document.getElementById('syncStatus').innerHTML = '🔄 Carregando dados da nuvem...';
+        document.getElementById('syncStatus').innerHTML = '🔄 Carregando...';
         const userDoc = await db.collection('users').doc(currentUser.uid).get();
         
         if (userDoc.exists) {
@@ -329,7 +331,7 @@ async function loadFromFirebase() {
             nextInvoiceId = ids.nextInvoiceId || 1;
             nextSavingsId = ids.nextSavingsId || 1;
             nextGoalId = ids.nextGoalId || 1;
-            document.getElementById('syncStatus').innerHTML = '✅ Dados carregados';
+            document.getElementById('syncStatus').innerHTML = '✅ Carregado';
         } else {
             // Dados iniciais
             transactions = [{ id: 1, desc: "Salário", amount: 5000, type: "income", category: "Salário", paymentMethod: "PIX", date: new Date().toISOString() }, { id: 2, desc: "Aluguel", amount: 1200, type: "expense", category: "Moradia", paymentMethod: "PIX", date: new Date().toISOString() }];
@@ -345,9 +347,54 @@ async function loadFromFirebase() {
         refreshAllViews();
     } catch (error) {
         console.error('Erro ao carregar:', error);
-        document.getElementById('syncStatus').innerHTML = '⚠️ Erro ao carregar dados';
+        document.getElementById('syncStatus').innerHTML = '⚠️ Erro';
         isSyncing = false;
     }
+}
+
+// ==================== FUNÇÃO ZERAR TODOS OS DADOS ====================
+async function resetAllData() {
+    if (!currentUser) return;
+    const confirmar = confirm('⚠️ ATENÇÃO! Isso irá apagar TODOS os seus dados:\n\n- Todas as movimentações\n- Poupanças\n- Metas financeiras\n- Cartões\n- Livro Caixa\n\nEsta ação não pode ser desfeita!\n\nDeseja continuar?');
+    if (!confirmar) return;
+    
+    const confirmar2 = confirm('ÚLTIMA CONFIRMAÇÃO! Tem certeza que deseja ZERAR TODOS OS DADOS?');
+    if (!confirmar2) return;
+    
+    // Resetar todas as variáveis
+    transactions = [];
+    futurePayments = [];
+    creditCards = [];
+    activeInstallments = [];
+    storeSales = [];
+    storeExpenses = [];
+    invoices = [];
+    savings = [];
+    financialGoals = [];
+    cashBalance = 5000;
+    pixBalance = 3000;
+    
+    // Resetar IDs
+    nextTransId = 1;
+    nextFutureId = 1;
+    nextCardId = 1;
+    nextInstallmentId = 1;
+    nextSaleId = 1;
+    nextExpenseId = 1;
+    nextInvoiceId = 1;
+    nextSavingsId = 1;
+    nextGoalId = 1;
+    
+    // Restaurar categorias padrão
+    categories = [{ id: 1, name: "Alimentação", type: "expense" }, { id: 2, name: "Moradia", type: "expense" }, { id: 3, name: "Transporte", type: "expense" }, { id: 4, name: "Saúde", type: "expense" }, { id: 5, name: "Lazer", type: "expense" }, { id: 6, name: "Salário", type: "income" }, { id: 7, name: "Freelance", type: "income" }, { id: 8, name: "Vendas Loja", type: "income" }, { id: 9, name: "Poupança", type: "expense" }];
+    nextCategoryId = 10;
+    
+    // Adicionar uma movimentação inicial para teste
+    transactions = [{ id: nextTransId++, desc: "Salário", amount: 5000, type: "income", category: "Salário", paymentMethod: "PIX", date: new Date().toISOString() }];
+    
+    await saveToFirebase();
+    refreshAllViews();
+    alert('✅ Todos os dados foram zerados com sucesso!');
 }
 
 // ==================== AUTENTICAÇÃO ====================
@@ -415,6 +462,8 @@ document.getElementById('logoutBtn')?.addEventListener('click', async () => {
     currentUser = null;
     document.getElementById('loginContainer').classList.remove('hide');
     document.getElementById('appContainer').classList.remove('show');
+    document.getElementById('loginEmail').value = '';
+    document.getElementById('loginPassword').value = '';
 });
 
 document.getElementById('changePasswordSecurityBtn')?.addEventListener('click', async () => {
@@ -430,6 +479,10 @@ document.getElementById('changePasswordSecurityBtn')?.addEventListener('click', 
     }
 });
 
+// Botão Zerar Todos os Dados
+document.getElementById('resetAllDataBtn')?.addEventListener('click', resetAllData);
+
+// Verificar se já está logado
 auth.onAuthStateChanged(async (user) => {
     if (user) {
         currentUser = user;
@@ -451,10 +504,12 @@ function getFutureTotal() { let inc = futurePayments.filter(f => f.type === 'inc
 function getSavingsTotal() { return savings.reduce((s, c) => s + (c.amount || 0), 0); }
 function getGoalsTotal() { return financialGoals.reduce((s, g) => s + (g.currentAmount || 0), 0); }
 
+// FUNÇÕES DE METAS
 function addGoal(name, targetAmount, currentAmount, deadline, color) { if (!name || !targetAmount) { alert('Preencha nome e valor objetivo'); return false; } financialGoals.push({ id: nextGoalId++, name, targetAmount, currentAmount: currentAmount || 0, deadline: deadline || null, color: color || "#F97316", createdAt: new Date().toISOString() }); refreshAllViews(); return true; }
 function updateGoal(id, name, targetAmount, currentAmount, deadline, color) { let g = financialGoals.find(g => g.id === id); if (g) { g.name = name; g.targetAmount = targetAmount; g.currentAmount = currentAmount; g.deadline = deadline; g.color = color; refreshAllViews(); } }
 function deleteGoal(id) { if (confirm('Excluir meta?')) { financialGoals = financialGoals.filter(g => g.id !== id); refreshAllViews(); } }
 
+// FUNÇÕES DE POUPANÇA
 function addSavings(name, amount, goal, color) { if (!name) { alert('Digite o nome da poupança'); return false; } savings.push({ id: nextSavingsId++, name, amount: amount || 0, goal: (goal && goal > 0) ? goal : null, color: color || "#EC4899", createdAt: new Date().toISOString() }); refreshAllViews(); return true; }
 function updateSavings(id, name, amount, goal, color) { let s = savings.find(s => s.id === id); if (s) { s.name = name; s.amount = amount || 0; s.goal = (goal && goal > 0) ? goal : null; s.color = color; refreshAllViews(); } }
 function deleteSavings(id) { if (confirm('Excluir poupança?')) { savings = savings.filter(s => s.id !== id); refreshAllViews(); } }
