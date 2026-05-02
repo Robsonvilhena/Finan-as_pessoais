@@ -105,7 +105,6 @@
         .progress-fill { height:100%; border-radius:20px; transition:width 0.3s; }
         .export-buttons { display:flex; gap:10px; margin-top:10px; flex-wrap:wrap; }
         .export-buttons button { flex:1; }
-        .loading { text-align:center; padding:20px; color:#94A3B8; }
         .sync-status { font-size:0.65rem; text-align:center; margin-top:10px; color:#6B7280; }
     </style>
 </head>
@@ -134,6 +133,7 @@
     </div>
 </div>
 
+<!-- MODAIS -->
 <div id="savingsModal" class="modal hide"><div class="modal-content"><h3 id="savingsModalTitle">➕ NOVA POUPANÇA</h3><input type="text" id="savingsName" placeholder="Nome da poupança"><input type="number" id="savingsAmount" placeholder="Saldo inicial R$" step="0.01" value="0"><input type="number" id="savingsGoal" placeholder="Objetivo (opcional)" step="0.01"><input type="color" id="savingsColor" value="#EC4899" style="height:45px;"><input type="hidden" id="savingsEditId"><div class="modal-buttons"><button id="savingsModalCancel" class="btn-danger">Cancelar</button><button id="savingsModalSave" class="btn-success">Salvar</button></div></div></div>
 <div id="goalModal" class="modal hide"><div class="modal-content"><h3 id="goalModalTitle">🎯 NOVA META</h3><input type="text" id="goalName" placeholder="Nome da meta"><input type="number" id="goalTarget" placeholder="Valor objetivo R$" step="0.01"><input type="number" id="goalCurrent" placeholder="Valor atual R$" step="0.01" value="0"><input type="date" id="goalDeadline" placeholder="Data limite"><input type="color" id="goalColor" value="#F97316" style="height:45px;"><input type="hidden" id="goalEditId"><div class="modal-buttons"><button id="goalModalCancel" class="btn-danger">Cancelar</button><button id="goalModalSave" class="btn-success">Salvar</button></div></div></div>
 <div id="photoModal" class="modal hide"><div class="modal-content"><h3>📸 Foto do Cupom</h3><img id="modalPhotoImg" src="" style="width:100%; border-radius:16px; margin:10px 0;"><div class="modal-buttons"><button id="closePhotoModal" class="btn-primary">Fechar</button></div></div></div>
@@ -204,19 +204,37 @@
         </div>
 
         <!-- HISTÓRICO -->
-        <div id="historyView" style="display:none;"><div class="section-card"><div class="section-title">📋 HISTÓRICO COMPLETO</div><div id="fullHistoryList" class="tx-list"></div></div></div>
+        <div id="historyView" style="display:none;">
+            <div class="section-card"><div class="section-title">📋 HISTÓRICO COMPLETO</div><div id="fullHistoryList" class="tx-list"></div></div>
+        </div>
 
         <!-- POUPANÇAS -->
-        <div id="savingsView" style="display:none;"><div class="section-card"><div class="section-title">💰 MINHAS POUPANÇAS</div><button id="addSavingsBtn" class="btn-pink" style="width:100%; margin-bottom:16px;">➕ Criar Nova Poupança</button><div id="savingsList"></div></div></div>
+        <div id="savingsView" style="display:none;">
+            <div class="section-card"><div class="section-title">💰 MINHAS POUPANÇAS</div><button id="addSavingsBtn" class="btn-pink" style="width:100%; margin-bottom:16px;">➕ Criar Nova Poupança</button><div id="savingsList"></div></div>
+        </div>
 
         <!-- METAS FINANCEIRAS -->
-        <div id="goalsView" style="display:none;"><div class="section-card"><div class="section-title">🎯 MINHAS METAS</div><button id="addGoalBtn" class="btn-orange" style="width:100%; margin-bottom:16px;">➕ Criar Nova Meta</button><div id="goalsList"></div></div></div>
+        <div id="goalsView" style="display:none;">
+            <div class="section-card"><div class="section-title">🎯 MINHAS METAS</div><button id="addGoalBtn" class="btn-orange" style="width:100%; margin-bottom:16px;">➕ Criar Nova Meta</button><div id="goalsList"></div></div>
+        </div>
 
         <!-- CARTÕES -->
-        <div id="cardsView" style="display:none;"><div class="section-card"><div class="section-title">💳 ADICIONAR NOVO CARTÃO</div><div class="card-form"><input type="text" id="newCardName" placeholder="Nome do cartão"><input type="text" id="newCardBank" placeholder="Banco"><input type="number" id="newCardLimit" placeholder="Limite R$" step="0.01"><div class="flex-row"><input type="number" id="newCardClosingDay" placeholder="Dia fechamento" style="flex:1"><input type="number" id="newCardDueDay" placeholder="Dia vencimento" style="flex:1"></div><button id="addCardBtn" class="btn-primary">➕ Adicionar</button></div></div><div class="section-card"><div class="section-title">💳 MEUS CARTÕES</div><div id="creditCardsList"></div></div><div class="section-card"><div class="section-title">📅 FATURAS ABERTAS</div><div id="invoicesList" class="tx-list"></div></div><div class="section-card"><div class="section-title">📦 PARCELAS ATIVAS</div><div id="installmentsList" class="tx-list"></div></div><div class="section-card"><div class="section-title">⚡ PAGAR FATURA / PARCELA</div><select id="paymentTypeSelect"><option value="invoice">Pagar Fatura</option><option value="installment">Pagar Parcela</option></select><select id="paymentSelect"></select><button id="confirmPaymentBtn" class="btn-success">💸 Confirmar Pagamento</button></div></div>
+        <div id="cardsView" style="display:none;">
+            <div class="section-card"><div class="section-title">💳 ADICIONAR NOVO CARTÃO</div><div class="card-form"><input type="text" id="newCardName" placeholder="Nome do cartão"><input type="text" id="newCardBank" placeholder="Banco"><input type="number" id="newCardLimit" placeholder="Limite R$" step="0.01"><div class="flex-row"><input type="number" id="newCardClosingDay" placeholder="Dia fechamento" style="flex:1"><input type="number" id="newCardDueDay" placeholder="Dia vencimento" style="flex:1"></div><button id="addCardBtn" class="btn-primary">➕ Adicionar</button></div></div>
+            <div class="section-card"><div class="section-title">💳 MEUS CARTÕES</div><div id="creditCardsList"></div></div>
+            <div class="section-card"><div class="section-title">📅 FATURAS ABERTAS</div><div id="invoicesList" class="tx-list"></div></div>
+            <div class="section-card"><div class="section-title">📦 PARCELAS ATIVAS</div><div id="installmentsList" class="tx-list"></div></div>
+            <div class="section-card"><div class="section-title">⚡ PAGAR FATURA / PARCELA</div><select id="paymentTypeSelect"><option value="invoice">Pagar Fatura</option><option value="installment">Pagar Parcela</option></select><select id="paymentSelect"></select><button id="confirmPaymentBtn" class="btn-success">💸 Confirmar Pagamento</button></div>
+        </div>
 
         <!-- LIVRO CAIXA LOJA -->
-        <div id="bookView" style="display:none;"><div class="section-card"><div class="section-title">🏪 RESUMO DA LOJA</div><div class="profit-card"><div class="balance-label">RECEITAS</div><div class="profit-value" id="storeRevenue">R$ 0</div></div><div class="profit-card"><div class="balance-label">DESPESAS</div><div class="profit-value" style="color:#F43F5E;" id="storeTotalCosts">R$ 0</div></div><div class="profit-card"><div class="balance-label">LUCRO LÍQUIDO</div><div class="profit-value" id="storeProfit">R$ 0</div></div></div><div class="section-card"><div class="section-title">💰 REGISTRAR RECEITA</div><input type="text" id="saleDesc" placeholder="Descrição"><input type="number" id="saleValue" placeholder="Valor R$" step="0.01"><div class="flex-row"><input type="date" id="saleDate" style="flex:1"><input type="time" id="saleTime" style="flex:1"></div><button id="registerSaleBtn" class="btn-success">💰 Registrar Receita</button></div><div class="section-card"><div class="section-title">💸 REGISTRAR DESPESA</div><input type="text" id="expenseDesc" placeholder="Descrição"><input type="number" id="expenseValue" placeholder="Valor R$" step="0.01"><div class="flex-row"><input type="date" id="expenseDate" style="flex:1"><input type="time" id="expenseTime" style="flex:1"></div><select id="expenseCategory"><option value="Mercadoria">📦 Mercadoria</option><option value="Água/Luz">💡 Água/Luz</option><option value="Aluguel">🏠 Aluguel</option><option value="Funcionário">👥 Funcionário</option><option value="Impostos">📄 Impostos</option><option value="Outros">📌 Outros</option></select><button id="registerExpenseBtn" class="btn-danger">💸 Registrar Despesa</button></div><div class="section-card"><div class="section-title">📋 RECEITAS</div><div id="salesList" class="tx-list"></div></div><div class="section-card"><div class="section-title">📋 DESPESAS</div><div id="storeExpensesList" class="tx-list"></div></div></div>
+        <div id="bookView" style="display:none;">
+            <div class="section-card"><div class="section-title">🏪 RESUMO DA LOJA</div><div class="profit-card"><div class="balance-label">RECEITAS</div><div class="profit-value" id="storeRevenue">R$ 0</div></div><div class="profit-card"><div class="balance-label">DESPESAS</div><div class="profit-value" style="color:#F43F5E;" id="storeTotalCosts">R$ 0</div></div><div class="profit-card"><div class="balance-label">LUCRO LÍQUIDO</div><div class="profit-value" id="storeProfit">R$ 0</div></div></div>
+            <div class="section-card"><div class="section-title">💰 REGISTRAR RECEITA</div><input type="text" id="saleDesc" placeholder="Descrição"><input type="number" id="saleValue" placeholder="Valor R$" step="0.01"><div class="flex-row"><input type="date" id="saleDate" style="flex:1"><input type="time" id="saleTime" style="flex:1"></div><button id="registerSaleBtn" class="btn-success">💰 Registrar Receita</button></div>
+            <div class="section-card"><div class="section-title">💸 REGISTRAR DESPESA</div><input type="text" id="expenseDesc" placeholder="Descrição"><input type="number" id="expenseValue" placeholder="Valor R$" step="0.01"><div class="flex-row"><input type="date" id="expenseDate" style="flex:1"><input type="time" id="expenseTime" style="flex:1"></div><select id="expenseCategory"><option value="Mercadoria">📦 Mercadoria</option><option value="Água/Luz">💡 Água/Luz</option><option value="Aluguel">🏠 Aluguel</option><option value="Funcionário">👥 Funcionário</option><option value="Impostos">📄 Impostos</option><option value="Outros">📌 Outros</option></select><button id="registerExpenseBtn" class="btn-danger">💸 Registrar Despesa</button></div>
+            <div class="section-card"><div class="section-title">📋 RECEITAS</div><div id="salesList" class="tx-list"></div></div>
+            <div class="section-card"><div class="section-title">📋 DESPESAS</div><div id="storeExpensesList" class="tx-list"></div></div>
+        </div>
 
         <!-- CONFIGURAÇÕES -->
         <div id="configView" style="display:none;">
@@ -239,7 +257,6 @@ const firebaseConfig = {
     appId: "1:319621531820:web:bc979555e4c8bcee28f709"
 };
 
-// Inicializar Firebase
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
@@ -256,7 +273,7 @@ let isSyncing = false;
 function formatMoney(v) { return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v || 0); }
 function escapeHtml(s) { if (!s) return ''; return s.replace(/[&<>]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' })[m]); }
 
-// ==================== FUNÇÕES DE SINCRONIZAÇÃO COM FIRESTORE ====================
+// ==================== FUNÇÕES DE SINCRONIZAÇÃO ====================
 async function saveToFirebase() {
     if (!currentUser || isSyncing) return;
     try {
@@ -312,9 +329,9 @@ async function loadFromFirebase() {
             nextInvoiceId = ids.nextInvoiceId || 1;
             nextSavingsId = ids.nextSavingsId || 1;
             nextGoalId = ids.nextGoalId || 1;
-            document.getElementById('syncStatus').innerHTML = '✅ Dados carregados da nuvem';
+            document.getElementById('syncStatus').innerHTML = '✅ Dados carregados';
         } else {
-            // Primeiro acesso - criar dados padrão
+            // Dados iniciais
             transactions = [{ id: 1, desc: "Salário", amount: 5000, type: "income", category: "Salário", paymentMethod: "PIX", date: new Date().toISOString() }, { id: 2, desc: "Aluguel", amount: 1200, type: "expense", category: "Moradia", paymentMethod: "PIX", date: new Date().toISOString() }];
             categories = [{ id: 1, name: "Alimentação", type: "expense" }, { id: 2, name: "Moradia", type: "expense" }, { id: 3, name: "Transporte", type: "expense" }, { id: 4, name: "Saúde", type: "expense" }, { id: 5, name: "Lazer", type: "expense" }, { id: 6, name: "Salário", type: "income" }, { id: 7, name: "Freelance", type: "income" }, { id: 8, name: "Vendas Loja", type: "income" }, { id: 9, name: "Poupança", type: "expense" }];
             creditCards = [{ id: 1, name: "Nubank", limit: 5000, used: 1250, bank: "Nubank", closingDay: 10, dueDay: 5, statementBalance: 1250 }];
@@ -323,7 +340,6 @@ async function loadFromFirebase() {
             savings = [{ id: 1, name: "Reserva Emergência", amount: 5000, goal: 20000, color: "#EC4899", createdAt: new Date().toISOString() }, { id: 2, name: "Viagem", amount: 1200, goal: 5000, color: "#06B6D4", createdAt: new Date().toISOString() }];
             financialGoals = [{ id: 1, name: "Comprar Carro", targetAmount: 50000, currentAmount: 10000, deadline: "2026-12-31", color: "#F97316", createdAt: new Date().toISOString() }];
             await saveToFirebase();
-            document.getElementById('syncStatus').innerHTML = '✅ Dados sincronizados';
         }
         isSyncing = false;
         refreshAllViews();
@@ -334,41 +350,25 @@ async function loadFromFirebase() {
     }
 }
 
-// ==================== FUNÇÕES DE AUTENTICAÇÃO ====================
-window.toggleLoginPassword = () => { togglePassword('loginPassword'); };
-window.toggleRegisterPassword = () => { togglePassword('registerPassword'); };
-window.toggleRegisterConfirmPassword = () => { togglePassword('registerConfirmPassword'); };
-function togglePassword(id) {
-    const input = document.getElementById(id);
-    if (input.type === 'password') { input.type = 'text'; } else { input.type = 'password'; }
-}
+// ==================== AUTENTICAÇÃO ====================
+window.toggleLoginPassword = () => { const i = document.getElementById('loginPassword'); i.type = i.type === 'password' ? 'text' : 'password'; };
+window.toggleRegisterPassword = () => { const i = document.getElementById('registerPassword'); i.type = i.type === 'password' ? 'text' : 'password'; };
+window.toggleRegisterConfirmPassword = () => { const i = document.getElementById('registerConfirmPassword'); i.type = i.type === 'password' ? 'text' : 'password'; };
 
 document.getElementById('btnShowRegister')?.addEventListener('click', () => {
     document.getElementById('loginForm').style.display = 'none';
     document.getElementById('registerForm').style.display = 'block';
-    document.getElementById('loginError').innerHTML = '';
-    document.getElementById('registerError').innerHTML = '';
-    document.getElementById('registerSuccess').innerHTML = '';
 });
-
 document.getElementById('btnBackToLogin')?.addEventListener('click', () => {
     document.getElementById('loginForm').style.display = 'block';
     document.getElementById('registerForm').style.display = 'none';
-    document.getElementById('loginError').innerHTML = '';
-    document.getElementById('registerError').innerHTML = '';
-    document.getElementById('registerSuccess').innerHTML = '';
 });
 
 document.getElementById('btnLogin')?.addEventListener('click', async () => {
     const email = document.getElementById('loginEmail').value;
     const password = document.getElementById('loginPassword').value;
     const errorDiv = document.getElementById('loginError');
-    
-    if (!email || !password) {
-        errorDiv.innerText = 'Preencha e-mail e senha';
-        return;
-    }
-    
+    if (!email || !password) { errorDiv.innerText = 'Preencha e-mail e senha'; return; }
     try {
         const result = await auth.signInWithEmailAndPassword(email, password);
         currentUser = result.user;
@@ -376,12 +376,11 @@ document.getElementById('btnLogin')?.addEventListener('click', async () => {
         document.getElementById('loginContainer').classList.add('hide');
         document.getElementById('appContainer').classList.add('show');
         await loadFromFirebase();
+        errorDiv.innerHTML = '';
     } catch (error) {
-        console.error(error);
         if (error.code === 'auth/user-not-found') errorDiv.innerText = 'Usuário não encontrado';
         else if (error.code === 'auth/wrong-password') errorDiv.innerText = 'Senha incorreta';
-        else if (error.code === 'auth/invalid-email') errorDiv.innerText = 'E-mail inválido';
-        else errorDiv.innerText = 'Erro ao fazer login: ' + error.message;
+        else errorDiv.innerText = 'Erro ao fazer login';
     }
 });
 
@@ -391,27 +390,14 @@ document.getElementById('btnRegister')?.addEventListener('click', async () => {
     const confirm = document.getElementById('registerConfirmPassword').value;
     const errorDiv = document.getElementById('registerError');
     const successDiv = document.getElementById('registerSuccess');
-    
-    if (!email || !password) {
-        errorDiv.innerText = 'Preencha e-mail e senha';
-        return;
-    }
-    if (password !== confirm) {
-        errorDiv.innerText = 'As senhas não coincidem';
-        return;
-    }
-    if (password.length < 6) {
-        errorDiv.innerText = 'A senha deve ter pelo menos 6 caracteres';
-        return;
-    }
-    
+    if (!email || !password) { errorDiv.innerText = 'Preencha e-mail e senha'; return; }
+    if (password !== confirm) { errorDiv.innerText = 'As senhas não coincidem'; return; }
+    if (password.length < 6) { errorDiv.innerText = 'A senha deve ter pelo menos 6 caracteres'; return; }
     try {
         const result = await auth.createUserWithEmailAndPassword(email, password);
         currentUser = result.user;
         document.getElementById('userEmail').innerText = currentUser.email;
         successDiv.innerText = 'Conta criada com sucesso!';
-        errorDiv.innerHTML = '';
-        // Criar dados iniciais
         await saveToFirebase();
         setTimeout(() => {
             document.getElementById('loginContainer').classList.add('hide');
@@ -419,11 +405,8 @@ document.getElementById('btnRegister')?.addEventListener('click', async () => {
             loadFromFirebase();
         }, 1500);
     } catch (error) {
-        console.error(error);
         if (error.code === 'auth/email-already-in-use') errorDiv.innerText = 'E-mail já cadastrado';
-        else if (error.code === 'auth/invalid-email') errorDiv.innerText = 'E-mail inválido';
-        else errorDiv.innerText = 'Erro ao criar conta: ' + error.message;
-        successDiv.innerHTML = '';
+        else errorDiv.innerText = 'Erro ao criar conta';
     }
 });
 
@@ -432,8 +415,6 @@ document.getElementById('logoutBtn')?.addEventListener('click', async () => {
     currentUser = null;
     document.getElementById('loginContainer').classList.remove('hide');
     document.getElementById('appContainer').classList.remove('show');
-    document.getElementById('loginEmail').value = '';
-    document.getElementById('loginPassword').value = '';
 });
 
 document.getElementById('changePasswordSecurityBtn')?.addEventListener('click', async () => {
@@ -444,14 +425,11 @@ document.getElementById('changePasswordSecurityBtn')?.addEventListener('click', 
             await currentUser.updatePassword(novaSenha);
             alert('Senha alterada com sucesso!');
         } catch (error) {
-            alert('Erro ao alterar senha: ' + error.message);
+            alert('Erro ao alterar senha');
         }
-    } else if (novaSenha) {
-        alert('A senha deve ter pelo menos 6 caracteres');
     }
 });
 
-// Verificar se já está logado
 auth.onAuthStateChanged(async (user) => {
     if (user) {
         currentUser = user;
@@ -462,10 +440,8 @@ auth.onAuthStateChanged(async (user) => {
     }
 });
 
-// ==================== FUNÇÕES DO APP (COM AUTO-SAVE) ====================
-function saveData() { 
-    saveToFirebase(); 
-}
+// ==================== FUNÇÕES DO APP ====================
+function saveData() { saveToFirebase(); }
 
 function getTotals() { let inc = 0, exp = 0; transactions.forEach(t => { if (t.type === 'income') inc += t.amount; else exp += t.amount; }); let cardDebt = creditCards.reduce((s, c) => s + (c.used || 0), 0); let totalSavings = savings.reduce((s, c) => s + (c.amount || 0), 0); let storeProfit = storeSales.reduce((s, v) => s + v.amount, 0) - storeExpenses.reduce((s, v) => s + v.amount, 0); let totalGoals = financialGoals.reduce((s, g) => s + (g.currentAmount || 0), 0); let balance = cashBalance + pixBalance + totalSavings + storeProfit - cardDebt; return { inc, exp, balance, cardDebt, totalSavings, storeProfit, totalGoals }; }
 function getStoreTotals() { let rev = storeSales.reduce((s, v) => s + v.amount, 0); let cost = storeExpenses.reduce((s, v) => s + v.amount, 0); return { revenue: rev, costs: cost, profit: rev - cost }; }
@@ -475,15 +451,13 @@ function getFutureTotal() { let inc = futurePayments.filter(f => f.type === 'inc
 function getSavingsTotal() { return savings.reduce((s, c) => s + (c.amount || 0), 0); }
 function getGoalsTotal() { return financialGoals.reduce((s, g) => s + (g.currentAmount || 0), 0); }
 
-// FUNÇÕES DE METAS
 function addGoal(name, targetAmount, currentAmount, deadline, color) { if (!name || !targetAmount) { alert('Preencha nome e valor objetivo'); return false; } financialGoals.push({ id: nextGoalId++, name, targetAmount, currentAmount: currentAmount || 0, deadline: deadline || null, color: color || "#F97316", createdAt: new Date().toISOString() }); refreshAllViews(); return true; }
 function updateGoal(id, name, targetAmount, currentAmount, deadline, color) { let g = financialGoals.find(g => g.id === id); if (g) { g.name = name; g.targetAmount = targetAmount; g.currentAmount = currentAmount; g.deadline = deadline; g.color = color; refreshAllViews(); } }
 function deleteGoal(id) { if (confirm('Excluir meta?')) { financialGoals = financialGoals.filter(g => g.id !== id); refreshAllViews(); } }
 
-// FUNÇÕES DE POUPANÇA
 function addSavings(name, amount, goal, color) { if (!name) { alert('Digite o nome da poupança'); return false; } savings.push({ id: nextSavingsId++, name, amount: amount || 0, goal: (goal && goal > 0) ? goal : null, color: color || "#EC4899", createdAt: new Date().toISOString() }); refreshAllViews(); return true; }
 function updateSavings(id, name, amount, goal, color) { let s = savings.find(s => s.id === id); if (s) { s.name = name; s.amount = amount || 0; s.goal = (goal && goal > 0) ? goal : null; s.color = color; refreshAllViews(); } }
-function deleteSavings(id) { if (confirm('Tem certeza que deseja excluir esta poupança?')) { savings = savings.filter(s => s.id !== id); refreshAllViews(); } }
+function deleteSavings(id) { if (confirm('Excluir poupança?')) { savings = savings.filter(s => s.id !== id); refreshAllViews(); } }
 
 function registerMovement(desc, amount, type, category, paymentMethod, cardId = null, parcelData = null, photoBase64 = null) {
     if (!desc || amount <= 0) { alert('Preencha descrição e valor'); return false; }
@@ -569,32 +543,11 @@ function transferBetweenAccounts(fromType, toType, amount, desc, fromCardId = nu
 function exportToExcel() { let data = transactions.map(t => ({ 'Data': new Date(t.date).toLocaleString(), 'Descrição': t.desc, 'Tipo': t.type === 'income' ? 'Receita' : (t.type === 'expense' ? 'Despesa' : 'Transferência'), 'Categoria': t.category || '-', 'Forma de Pagamento': t.paymentMethod || '-', 'Valor': t.amount })); let ws = XLSX.utils.json_to_sheet(data); let wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, 'Movimentações'); XLSX.writeFile(wb, `financeiro_jean_${new Date().toISOString().split('T')[0]}.xlsx`); alert('✅ Excel exportado!'); }
 function exportToGoogleSheets() { let headers = ['Data', 'Descrição', 'Tipo', 'Categoria', 'Forma de Pagamento', 'Valor']; let rows = transactions.map(t => [new Date(t.date).toLocaleString(), t.desc, t.type === 'income' ? 'Receita' : (t.type === 'expense' ? 'Despesa' : 'Transferência'), t.category || '-', t.paymentMethod || '-', t.amount]); let csv = [headers, ...rows].map(row => row.join(',')).join('\n'); let blob = new Blob(["\uFEFF" + csv], { type: 'text/csv;charset=utf-8' }); let a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `financeiro_jean_${new Date().toISOString().split('T')[0]}.csv`; a.click(); alert('✅ CSV exportado! Importe no Google Sheets.'); }
 
-// ==================== FOTO ====================
-function escolherFoto() {
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = 'image/*';
-    input.onchange = (e) => { if (e.target.files && e.target.files[0]) processarFoto(e.target.files[0]); };
-    input.click();
-}
-function processarFoto(file) {
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = function(e) {
-        currentPhotoBase64 = e.target.result;
-        const preview = document.getElementById('photoPreview');
-        const img = document.getElementById('cupomImage');
-        img.src = currentPhotoBase64;
-        preview.style.display = 'block';
-        alert('✅ Foto adicionada com sucesso!');
-    };
-    reader.readAsDataURL(file);
-}
+function escolherFoto() { const input = document.createElement('input'); input.type = 'file'; input.accept = 'image/*'; input.onchange = (e) => { if (e.target.files && e.target.files[0]) { const reader = new FileReader(); reader.onload = function(ev) { currentPhotoBase64 = ev.target.result; document.getElementById('photoPreview').style.display = 'block'; document.getElementById('cupomImage').src = currentPhotoBase64; alert('✅ Foto adicionada!'); }; reader.readAsDataURL(e.target.files[0]); } }; input.click(); }
 function removerFoto() { currentPhotoBase64 = null; document.getElementById('photoPreview').style.display = 'none'; document.getElementById('cupomImage').src = ''; }
-function showPhotoModal(photo) { let modal = document.getElementById('photoModal'); let img = document.getElementById('modalPhotoImg'); img.src = photo; modal.classList.remove('hide'); }
+function showPhotoModal(photo) { document.getElementById('modalPhotoImg').src = photo; document.getElementById('photoModal').classList.remove('hide'); }
 document.getElementById('closePhotoModal')?.addEventListener('click', () => document.getElementById('photoModal').classList.add('hide'));
 
-// GRÁFICOS
 function updateAllCharts() {
     const { inc, exp } = getTotals();
     if (chartIncomeExpense) chartIncomeExpense.destroy();
@@ -645,7 +598,7 @@ function refreshAllViews() {
     // METAS
     let goalsDiv = document.getElementById('goalsList'); if (goalsDiv) { if (financialGoals.length === 0) goalsDiv.innerHTML = '<div style="text-align:center;padding:20px;">Nenhuma meta cadastrada</div>'; else goalsDiv.innerHTML = financialGoals.map(g => { let percent = (g.currentAmount / g.targetAmount) * 100; let daysLeft = g.deadline ? Math.ceil((new Date(g.deadline) - new Date()) / (1000 * 60 * 60 * 24)) : null; return `<div class="goal-card" style="border-left:3px solid ${g.color};"><div style="display:flex;justify-content:space-between;"><div><strong>🎯 ${escapeHtml(g.name)}</strong></div><div><button class="edit-goal" data-id="${g.id}" style="background:#3B82F6;">✏️</button><button class="delete-goal" data-id="${g.id}" style="background:#F43F5E;">🗑️</button></div></div><div>💰 Atual: ${formatMoney(g.currentAmount)} de ${formatMoney(g.targetAmount)}</div><div class="progress-bar"><div class="progress-fill" style="width:${Math.min(percent, 100)}%; background:${g.color};"></div></div><div>📊 ${percent.toFixed(1)}% concluída</div>${daysLeft !== null ? `<div>⏰ ${daysLeft} dias restantes</div>` : ''}</div>`; }).join('');
     document.querySelectorAll('.edit-goal').forEach(btn => btn.addEventListener('click', () => { let id = parseInt(btn.dataset.id); let g = financialGoals.find(g => g.id === id); if (g) { document.getElementById('goalModalTitle').innerHTML = '✏️ EDITAR META'; document.getElementById('goalName').value = g.name; document.getElementById('goalTarget').value = g.targetAmount; document.getElementById('goalCurrent').value = g.currentAmount; document.getElementById('goalDeadline').value = g.deadline || ''; document.getElementById('goalColor').value = g.color; document.getElementById('goalEditId').value = g.id; document.getElementById('goalModal').classList.remove('hide'); } }));
-    document.querySelectorAll('.delete-goal').forEach(btn => btn.addEventListener('click', () => deleteGoal(parseInt(btn.dataset.id)))); }
+    document.querySelectorAll('.delete-goal').forEach(btn => btn.addEventListener('click', () => deleteGoal(parseInt(btn.dataset.id)))); 
 
     // MOVIMENTAÇÕES
     let recentDiv = document.getElementById('recentMovementsList'); if (recentDiv) recentDiv.innerHTML = [...transactions].sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 10).map(t => `<div class="tx-item" style="border-left-color:${t.type === 'income' ? '#10B981' : (t.type === 'expense' ? '#F43F5E' : '#FBBF24')}"><div><strong>${escapeHtml(t.desc)}</strong><div style="font-size:0.6rem;">${new Date(t.date).toLocaleString()} | ${t.paymentMethod || '-'}</div></div><div>${t.type === 'income' ? '+' : (t.type === 'expense' ? '-' : '↺')} ${formatMoney(t.amount)}</div></div>`).join('');
@@ -746,10 +699,7 @@ function iniciarApp() {
     if (document.getElementById('expenseDate')) document.getElementById('expenseDate').value = today;
 }
 
-// Se o usuário já estiver logado, inicia o app
-if (currentUser) {
-    iniciarApp();
-}
+if (currentUser) { iniciarApp(); }
 </script>
 </body>
 </html>
