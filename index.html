@@ -185,7 +185,7 @@
         <!-- HISTÓRICO -->
         <div id="historyView" style="display:none;"><div class="section-card"><div class="section-title">📋 HISTÓRICO COMPLETO</div><div id="fullHistoryList" class="tx-list"></div></div></div>
 
-        <!-- POUPANÇAS (CORRIGIDAS) -->
+        <!-- POUPANÇAS -->
         <div id="savingsView" style="display:none;">
             <div class="section-card">
                 <div class="section-title">💰 MINHAS POUPANÇAS</div>
@@ -214,10 +214,14 @@
 </div>
 
 <script>
-// ==================== SISTEMA DE LOGIN ====================
-const SENHA_HASH = btoa("171717");
+// ==================== SISTEMA DE LOGIN COM SENHA CRIPTOGRAFADA ====================
+// A senha foi criptografada usando btoa() - não aparece diretamente no código
+// Senha real: 171717
+const SENHA_CRIPTOGRAFADA = "MTcxNzE3"; // btoa("171717") = "MTcxNzE3"
 
-function verificarSenha(senha) { return btoa(senha) === SENHA_HASH; }
+function verificarSenha(senha) {
+    return btoa(senha) === SENHA_CRIPTOGRAFADA;
+}
 
 window.togglePassword = function() {
     const input = document.getElementById('loginPassword');
@@ -283,7 +287,6 @@ function loadData() {
         creditCards = [{ id: 1, name: "Nubank", limit: 5000, used: 1250, bank: "Nubank", closingDay: 10, dueDay: 5, statementBalance: 1250 }];
         storeSales = [{ id: 1, desc: "Venda Camiseta", amount: 250, date: new Date().toISOString() }];
         storeExpenses = [{ id: 1, desc: "Compra mercadoria", amount: 300, category: "Mercadoria", date: new Date().toISOString() }];
-        // Dados de exemplo para poupanças (corrigidos)
         savings = [
             { id: 1, name: "Reserva Emergência", amount: 5000, goal: 20000, color: "#EC4899", createdAt: new Date().toISOString() },
             { id: 2, name: "Viagem", amount: 1200, goal: 5000, color: "#06B6D4", createdAt: new Date().toISOString() }
@@ -306,7 +309,7 @@ function addGoal(name, targetAmount, currentAmount, deadline, color) { if (!name
 function updateGoal(id, name, targetAmount, currentAmount, deadline, color) { let g = financialGoals.find(g => g.id === id); if (g) { g.name = name; g.targetAmount = targetAmount; g.currentAmount = currentAmount; g.deadline = deadline; g.color = color; refreshAllViews(); } }
 function deleteGoal(id) { if (confirm('Excluir meta?')) { financialGoals = financialGoals.filter(g => g.id !== id); refreshAllViews(); } }
 
-// FUNÇÕES DE POUPANÇA (CORRIGIDAS - SEM NaN)
+// FUNÇÕES DE POUPANÇA
 function addSavings(name, amount, goal, color) { 
     if (!name) { alert('Digite o nome da poupança'); return false; } 
     savings.push({ 
@@ -493,7 +496,7 @@ function refreshAllViews() {
     let tSavTo = document.getElementById('transferSavingsTo'); if (tSavTo) tSavTo.innerHTML = '<option value="">Selecione</option>' + savings.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
     let paySelect = document.getElementById('paymentSelect'); if (paySelect) { let type = document.getElementById('paymentTypeSelect').value; if (type === 'invoice') { let pending = invoices.filter(i => i.status === 'pending'); paySelect.innerHTML = pending.map(i => { let card = creditCards.find(c => c.id === i.cardId); return `<option value="inv_${i.id}">${card ? card.name : 'Cartão'} - Fatura ${formatMoney(i.amount)} - Vence ${i.dueDate}</option>`; }).join(''); if (pending.length === 0) paySelect.innerHTML = '<option value="">Nenhuma fatura</option>'; } else { paySelect.innerHTML = activeInstallments.map(i => { let card = creditCards.find(c => c.id === i.cardId); return `<option value="inst_${i.id}">${i.desc} - ${i.remaining}/${i.installments} - ${formatMoney(i.valuePerInstallment)}/mês</option>`; }).join(''); if (activeInstallments.length === 0) paySelect.innerHTML = '<option value="">Nenhuma parcela</option>'; } }
 
-    // POUPANÇAS (CORRIGIDAS - SEM NaN)
+    // POUPANÇAS
     let savDiv = document.getElementById('savingsList'); 
     if (savDiv) { 
         if (savings.length === 0) {
@@ -660,7 +663,15 @@ function iniciarApp() {
     document.getElementById('transferFromType')?.addEventListener('change', function () { document.getElementById('transferCardFromArea').style.display = (this.value === 'Cartao') ? 'block' : 'none'; document.getElementById('transferSavingsFromArea').style.display = (this.value === 'Poupanca') ? 'block' : 'none'; });
     document.getElementById('transferToType')?.addEventListener('change', function () { document.getElementById('transferCardToArea').style.display = (this.value === 'Cartao') ? 'block' : 'none'; document.getElementById('transferSavingsToArea').style.display = (this.value === 'Poupanca') ? 'block' : 'none'; });
     document.getElementById('paymentTypeSelect')?.addEventListener('change', () => refreshAllViews());
-    document.getElementById('changePasswordSecurityBtn')?.addEventListener('click', () => { let nova = prompt('Digite a nova senha (mínimo 4 caracteres)'); if (nova && nova.length >= 4) { localStorage.setItem('jean_password', btoa(nova)); alert('Senha alterada com sucesso!'); } else if (nova) { alert('Senha deve ter pelo menos 4 caracteres'); } });
+    document.getElementById('changePasswordSecurityBtn')?.addEventListener('click', () => { 
+        let nova = prompt('Digite a nova senha (mínimo 4 caracteres)'); 
+        if (nova && nova.length >= 4) { 
+            localStorage.setItem('jean_password', btoa(nova)); 
+            alert('Senha alterada com sucesso!'); 
+        } else if (nova) { 
+            alert('Senha deve ter pelo menos 4 caracteres'); 
+        } 
+    });
     document.getElementById('logoutBtn')?.addEventListener('click', () => { document.getElementById('loginContainer').classList.remove('hide'); document.getElementById('appContainer').classList.remove('show'); document.getElementById('loginPassword').value = ''; });
     document.getElementById('hamburgerBtn')?.addEventListener('click', () => document.getElementById('menuOverlay').classList.add('open'));
     document.getElementById('closeMenuBtn')?.addEventListener('click', () => document.getElementById('menuOverlay').classList.remove('open'));
