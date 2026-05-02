@@ -3,9 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
-    <title>FINANCEIRO JEAN</title>
+    <title>FINANCEIRO JEAN - Cloud</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { background: linear-gradient(145deg, #07090F 0%, #0A0E16 100%); font-family: 'Inter', -apple-system, 'Segoe UI', system-ui, sans-serif; color: #EDF2F8; min-height: 100vh; overflow-x: hidden; }
@@ -23,7 +27,9 @@
         .input-group input:focus { border-color:#3B82F6; box-shadow:0 0 0 3px rgba(59,130,246,0.2); }
         .password-toggle { position:absolute; right:16px; top:50%; transform:translateY(-50%); cursor:pointer; font-size:1.2rem; background:none; padding:0; color:#8E9AAC; }
         .btn-login { width:100%; background:linear-gradient(95deg,#3B82F6,#8B5CF6); padding:14px; font-size:1rem; margin-top:12px; border:none; border-radius:28px; color:white; font-weight:600; cursor:pointer; }
+        .btn-login-outline { background:transparent; border:1.5px solid #3B82F6; margin-top:8px; }
         .error-msg { color:#F43F5E; font-size:0.75rem; margin-top:12px; text-align:center; }
+        .success-msg { color:#10B981; font-size:0.75rem; margin-top:12px; text-align:center; }
         .security-badge { text-align:center; margin-top:20px; font-size:0.65rem; color:#4B5565; }
 
         /* APP */
@@ -47,6 +53,7 @@
         .hamburger span { width:22px; height:2px; background:white; border-radius:2px; }
         .logo-area h1 { font-size:1.1rem; font-weight:700; background:linear-gradient(135deg,#FFFFFF,#A5B4FC,#C084FC); -webkit-background-clip:text; background-clip:text; color:transparent; }
         .user-info { display:flex; align-items:center; gap:8px; background:rgba(255,255,255,0.05); padding:6px 12px; border-radius:30px; }
+        .user-email { font-size:0.7rem; color:#94A3B8; max-width:120px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
         .logout-btn { background:none; padding:4px 8px; font-size:0.7rem; color:#F43F5E; cursor:pointer; border:none; }
 
         .balance-card { background:rgba(15,23,42,0.7); backdrop-filter:blur(12px); border-radius:28px; padding:16px 20px; margin-bottom:20px; border:1px solid rgba(255,255,255,0.08); }
@@ -98,24 +105,37 @@
         .progress-fill { height:100%; border-radius:20px; transition:width 0.3s; }
         .export-buttons { display:flex; gap:10px; margin-top:10px; flex-wrap:wrap; }
         .export-buttons button { flex:1; }
+        .loading { text-align:center; padding:20px; color:#94A3B8; }
+        .sync-status { font-size:0.65rem; text-align:center; margin-top:10px; color:#6B7280; }
     </style>
 </head>
 <body>
+<!-- TELA DE LOGIN -->
 <div id="loginContainer" class="login-container">
     <div class="login-card">
-        <div class="login-logo"><h1>FINANCEIRO JEAN</h1><p>SISTEMA SEGURO</p></div>
-        <div class="input-group"><input type="text" id="loginUsername" placeholder="Usuário" value="Jean" readonly style="background:#1E293B; opacity:0.8;"></div>
-        <div class="input-group"><input type="password" id="loginPassword" placeholder="Senha" autocomplete="off"><span class="password-toggle" onclick="togglePassword()">👁️</span></div>
-        <button id="btnLogin" class="btn-login">Entrar</button>
-        <div id="loginError" class="error-msg"></div>
-        <div class="security-badge">🔐 Sistema seguro</div>
+        <div class="login-logo"><h1>FINANCEIRO JEAN</h1><p>CLOUD SYNC</p></div>
+        <div id="loginForm">
+            <div class="input-group"><input type="email" id="loginEmail" placeholder="E-mail"></div>
+            <div class="input-group"><input type="password" id="loginPassword" placeholder="Senha"><span class="password-toggle" onclick="toggleLoginPassword()">👁️</span></div>
+            <button id="btnLogin" class="btn-login">Entrar</button>
+            <button id="btnShowRegister" class="btn-login btn-login-outline">Criar Conta</button>
+            <div id="loginError" class="error-msg"></div>
+        </div>
+        <div id="registerForm" style="display:none;">
+            <div class="input-group"><input type="email" id="registerEmail" placeholder="E-mail"></div>
+            <div class="input-group"><input type="password" id="registerPassword" placeholder="Senha (mínimo 6 caracteres)"><span class="password-toggle" onclick="toggleRegisterPassword()">👁️</span></div>
+            <div class="input-group"><input type="password" id="registerConfirmPassword" placeholder="Confirmar senha"><span class="password-toggle" onclick="toggleRegisterConfirmPassword()">👁️</span></div>
+            <button id="btnRegister" class="btn-login">Criar Conta</button>
+            <button id="btnBackToLogin" class="btn-login btn-login-outline">Voltar</button>
+            <div id="registerError" class="error-msg"></div>
+            <div id="registerSuccess" class="success-msg"></div>
+        </div>
+        <div class="security-badge">🔐 Dados sincronizados na nuvem</div>
     </div>
 </div>
 
 <div id="savingsModal" class="modal hide"><div class="modal-content"><h3 id="savingsModalTitle">➕ NOVA POUPANÇA</h3><input type="text" id="savingsName" placeholder="Nome da poupança"><input type="number" id="savingsAmount" placeholder="Saldo inicial R$" step="0.01" value="0"><input type="number" id="savingsGoal" placeholder="Objetivo (opcional)" step="0.01"><input type="color" id="savingsColor" value="#EC4899" style="height:45px;"><input type="hidden" id="savingsEditId"><div class="modal-buttons"><button id="savingsModalCancel" class="btn-danger">Cancelar</button><button id="savingsModalSave" class="btn-success">Salvar</button></div></div></div>
-
 <div id="goalModal" class="modal hide"><div class="modal-content"><h3 id="goalModalTitle">🎯 NOVA META</h3><input type="text" id="goalName" placeholder="Nome da meta"><input type="number" id="goalTarget" placeholder="Valor objetivo R$" step="0.01"><input type="number" id="goalCurrent" placeholder="Valor atual R$" step="0.01" value="0"><input type="date" id="goalDeadline" placeholder="Data limite"><input type="color" id="goalColor" value="#F97316" style="height:45px;"><input type="hidden" id="goalEditId"><div class="modal-buttons"><button id="goalModalCancel" class="btn-danger">Cancelar</button><button id="goalModalSave" class="btn-success">Salvar</button></div></div></div>
-
 <div id="photoModal" class="modal hide"><div class="modal-content"><h3>📸 Foto do Cupom</h3><img id="modalPhotoImg" src="" style="width:100%; border-radius:16px; margin:10px 0;"><div class="modal-buttons"><button id="closePhotoModal" class="btn-primary">Fechar</button></div></div></div>
 
 <div id="appContainer" class="app-container">
@@ -135,8 +155,9 @@
         <div class="top-bar">
             <div class="hamburger" id="hamburgerBtn"><span></span><span></span><span></span></div>
             <div class="logo-area"><h1>FINANCEIRO JEAN</h1></div>
-            <div class="user-info"><span>👤 Jean</span><button id="logoutBtn" class="logout-btn">Sair</button></div>
+            <div class="user-info"><span class="user-email" id="userEmail"></span><button id="logoutBtn" class="logout-btn">Sair</button></div>
         </div>
+        <div class="sync-status" id="syncStatus">🔄 Sincronizando...</div>
 
         <!-- DASHBOARD -->
         <div id="dashboardView">
@@ -186,13 +207,7 @@
         <div id="historyView" style="display:none;"><div class="section-card"><div class="section-title">📋 HISTÓRICO COMPLETO</div><div id="fullHistoryList" class="tx-list"></div></div></div>
 
         <!-- POUPANÇAS -->
-        <div id="savingsView" style="display:none;">
-            <div class="section-card">
-                <div class="section-title">💰 MINHAS POUPANÇAS</div>
-                <button id="addSavingsBtn" class="btn-pink" style="width:100%; margin-bottom:16px;">➕ Criar Nova Poupança</button>
-                <div id="savingsList"></div>
-            </div>
-        </div>
+        <div id="savingsView" style="display:none;"><div class="section-card"><div class="section-title">💰 MINHAS POUPANÇAS</div><button id="addSavingsBtn" class="btn-pink" style="width:100%; margin-bottom:16px;">➕ Criar Nova Poupança</button><div id="savingsList"></div></div></div>
 
         <!-- METAS FINANCEIRAS -->
         <div id="goalsView" style="display:none;"><div class="section-card"><div class="section-title">🎯 MINHAS METAS</div><button id="addGoalBtn" class="btn-orange" style="width:100%; margin-bottom:16px;">➕ Criar Nova Meta</button><div id="goalsList"></div></div></div>
@@ -208,92 +223,248 @@
             <div class="section-card"><div class="section-title">🔐 SEGURANÇA</div><button id="changePasswordSecurityBtn" class="btn-primary">🔑 Alterar Senha</button></div>
             <div class="section-card"><div class="section-title">📋 CATEGORIAS</div><div class="flex-row"><input type="text" id="newCategoryName" placeholder="Nome da categoria" style="flex:2"><select id="newCategoryType" style="flex:1"><option value="expense">Despesa</option><option value="income">Receita</option></select><button id="addCategoryBtn" class="btn-primary">Adicionar</button></div><div id="categoriesList" class="tx-list" style="margin-top:12px;"></div></div>
             <div class="section-card"><div class="section-title">📤 EXPORTAR DADOS</div><div class="export-buttons"><button id="exportExcelBtn" class="btn-success">📊 Excel</button><button id="exportGoogleBtn" class="btn-primary">📤 Google Sheets</button></div></div>
-            <div class="section-card"><div class="section-title">💾 BACKUP</div><div class="flex-row"><button id="exportDataBtn" class="btn-primary">📤 Exportar Backup</button><button id="importDataBtn" class="btn-warning">📥 Importar Backup</button></div><input type="file" id="importFile" style="display:none;" accept=".json"><div id="backupMsg" class="info-text"></div></div>
+            <div class="section-card"><div class="section-title">💾 BACKUP LOCAL</div><div class="flex-row"><button id="exportDataBtn" class="btn-primary">📤 Exportar Backup</button><button id="importDataBtn" class="btn-warning">📥 Importar Backup</button></div><input type="file" id="importFile" style="display:none;" accept=".json"><div id="backupMsg" class="info-text"></div></div>
         </div>
     </div>
 </div>
 
 <script>
-// ==================== SISTEMA DE LOGIN COM SENHA CRIPTOGRAFADA ====================
-// A senha foi criptografada usando btoa() - não aparece diretamente no código
-// Senha real: 171717
-const SENHA_CRIPTOGRAFADA = "MTcxNzE3"; // btoa("171717") = "MTcxNzE3"
-
-function verificarSenha(senha) {
-    return btoa(senha) === SENHA_CRIPTOGRAFADA;
-}
-
-window.togglePassword = function() {
-    const input = document.getElementById('loginPassword');
-    const btn = document.querySelector('#loginContainer .password-toggle');
-    if (input.type === 'password') { input.type = 'text'; btn.textContent = '🙈'; }
-    else { input.type = 'password'; btn.textContent = '👁️'; }
+// ==================== FIREBASE CONFIGURAÇÃO ====================
+const firebaseConfig = {
+    apiKey: "AIzaSyDQF8FM0zPk5Cvyxw3hGLQI2EHmyjWQFiY",
+    authDomain: "financas-pessoais-d336a.firebaseapp.com",
+    projectId: "financas-pessoais-d336a",
+    storageBucket: "financas-pessoais-d336a.firebasestorage.app",
+    messagingSenderId: "319621531820",
+    appId: "1:319621531820:web:bc979555e4c8bcee28f709"
 };
 
-document.getElementById('btnLogin').addEventListener('click', () => {
-    const pwd = document.getElementById('loginPassword').value;
-    if (verificarSenha(pwd)) {
-        document.getElementById('loginContainer').classList.add('hide');
-        document.getElementById('appContainer').classList.add('show');
-        iniciarApp();
-    } else {
-        document.getElementById('loginError').innerText = 'Senha incorreta!';
-    }
-});
-document.getElementById('loginPassword').addEventListener('keypress', (e) => { if (e.key === 'Enter') document.getElementById('btnLogin').click(); });
+// Inicializar Firebase
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.firestore();
 
-// ==================== DADOS GLOBAIS ====================
+// ==================== VARIÁVEIS GLOBAIS ====================
 let transactions = [], futurePayments = [], creditCards = [], categories = [], activeInstallments = [], storeSales = [], storeExpenses = [], invoices = [], savings = [], financialGoals = [];
 let cashBalance = 5000, pixBalance = 3000;
 let nextTransId = 1, nextFutureId = 1, nextCardId = 1, nextCategoryId = 9, nextInstallmentId = 1, nextSaleId = 1, nextExpenseId = 1, nextInvoiceId = 1, nextSavingsId = 1, nextGoalId = 1;
 let chartIncomeExpense, chartSavings, chartExpenseCategory, chartDailyProfit;
 let currentPhotoBase64 = null;
+let currentUser = null;
+let isSyncing = false;
 
 function formatMoney(v) { return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v || 0); }
 function escapeHtml(s) { if (!s) return ''; return s.replace(/[&<>]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' })[m]); }
 
-function saveData() { localStorage.setItem('jean_finance_data', JSON.stringify({ transactions, futurePayments, creditCards, categories, activeInstallments, storeSales, storeExpenses, invoices, savings, financialGoals, cashBalance, pixBalance, ids: { nextTransId, nextFutureId, nextCardId, nextCategoryId, nextInstallmentId, nextSaleId, nextExpenseId, nextInvoiceId, nextSavingsId, nextGoalId } })); }
-
-function loadData() {
-    const saved = localStorage.getItem('jean_finance_data');
-    if (saved) {
-        const d = JSON.parse(saved);
-        transactions = d.transactions || [];
-        futurePayments = d.futurePayments || [];
-        creditCards = d.creditCards || [];
-        categories = d.categories || [];
-        activeInstallments = d.activeInstallments || [];
-        storeSales = d.storeSales || [];
-        storeExpenses = d.storeExpenses || [];
-        invoices = d.invoices || [];
-        savings = d.savings || [];
-        financialGoals = d.financialGoals || [];
-        cashBalance = d.cashBalance !== undefined ? d.cashBalance : 5000;
-        pixBalance = d.pixBalance !== undefined ? d.pixBalance : 3000;
-        const ids = d.ids || {};
-        nextTransId = ids.nextTransId || 1;
-        nextFutureId = ids.nextFutureId || 1;
-        nextCardId = ids.nextCardId || 1;
-        nextCategoryId = ids.nextCategoryId || 9;
-        nextInstallmentId = ids.nextInstallmentId || 1;
-        nextSaleId = ids.nextSaleId || 1;
-        nextExpenseId = ids.nextExpenseId || 1;
-        nextInvoiceId = ids.nextInvoiceId || 1;
-        nextSavingsId = ids.nextSavingsId || 1;
-        nextGoalId = ids.nextGoalId || 1;
-    } else {
-        transactions = [{ id: 1, desc: "Salário", amount: 5000, type: "income", category: "Salário", paymentMethod: "PIX", date: new Date().toISOString() }, { id: 2, desc: "Aluguel", amount: 1200, type: "expense", category: "Moradia", paymentMethod: "PIX", date: new Date().toISOString() }];
-        categories = [{ id: 1, name: "Alimentação", type: "expense" }, { id: 2, name: "Moradia", type: "expense" }, { id: 3, name: "Transporte", type: "expense" }, { id: 4, name: "Saúde", type: "expense" }, { id: 5, name: "Lazer", type: "expense" }, { id: 6, name: "Salário", type: "income" }, { id: 7, name: "Freelance", type: "income" }, { id: 8, name: "Vendas Loja", type: "income" }, { id: 9, name: "Poupança", type: "expense" }];
-        creditCards = [{ id: 1, name: "Nubank", limit: 5000, used: 1250, bank: "Nubank", closingDay: 10, dueDay: 5, statementBalance: 1250 }];
-        storeSales = [{ id: 1, desc: "Venda Camiseta", amount: 250, date: new Date().toISOString() }];
-        storeExpenses = [{ id: 1, desc: "Compra mercadoria", amount: 300, category: "Mercadoria", date: new Date().toISOString() }];
-        savings = [
-            { id: 1, name: "Reserva Emergência", amount: 5000, goal: 20000, color: "#EC4899", createdAt: new Date().toISOString() },
-            { id: 2, name: "Viagem", amount: 1200, goal: 5000, color: "#06B6D4", createdAt: new Date().toISOString() }
-        ];
-        financialGoals = [{ id: 1, name: "Comprar Carro", targetAmount: 50000, currentAmount: 10000, deadline: "2026-12-31", color: "#F97316", createdAt: new Date().toISOString() }];
-        saveData();
+// ==================== FUNÇÕES DE SINCRONIZAÇÃO COM FIRESTORE ====================
+async function saveToFirebase() {
+    if (!currentUser || isSyncing) return;
+    try {
+        const userDoc = db.collection('users').doc(currentUser.uid);
+        await userDoc.set({
+            transactions, futurePayments, creditCards, categories, activeInstallments,
+            storeSales, storeExpenses, invoices, savings, financialGoals,
+            cashBalance, pixBalance,
+            ids: { nextTransId, nextFutureId, nextCardId, nextCategoryId, nextInstallmentId, 
+                   nextSaleId, nextExpenseId, nextInvoiceId, nextSavingsId, nextGoalId },
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        }, { merge: true });
+        document.getElementById('syncStatus').innerHTML = '✅ Sincronizado com a nuvem';
+        setTimeout(() => {
+            if(document.getElementById('syncStatus')) 
+                document.getElementById('syncStatus').innerHTML = '☁️ Dados na nuvem';
+        }, 3000);
+    } catch (error) {
+        console.error('Erro ao salvar:', error);
+        document.getElementById('syncStatus').innerHTML = '⚠️ Erro na sincronização';
     }
+}
+
+async function loadFromFirebase() {
+    if (!currentUser) return;
+    try {
+        isSyncing = true;
+        document.getElementById('syncStatus').innerHTML = '🔄 Carregando dados da nuvem...';
+        const userDoc = await db.collection('users').doc(currentUser.uid).get();
+        
+        if (userDoc.exists) {
+            const data = userDoc.data();
+            transactions = data.transactions || [];
+            futurePayments = data.futurePayments || [];
+            creditCards = data.creditCards || [];
+            categories = data.categories || [];
+            activeInstallments = data.activeInstallments || [];
+            storeSales = data.storeSales || [];
+            storeExpenses = data.storeExpenses || [];
+            invoices = data.invoices || [];
+            savings = data.savings || [];
+            financialGoals = data.financialGoals || [];
+            cashBalance = data.cashBalance !== undefined ? data.cashBalance : 5000;
+            pixBalance = data.pixBalance !== undefined ? data.pixBalance : 3000;
+            const ids = data.ids || {};
+            nextTransId = ids.nextTransId || 1;
+            nextFutureId = ids.nextFutureId || 1;
+            nextCardId = ids.nextCardId || 1;
+            nextCategoryId = ids.nextCategoryId || 9;
+            nextInstallmentId = ids.nextInstallmentId || 1;
+            nextSaleId = ids.nextSaleId || 1;
+            nextExpenseId = ids.nextExpenseId || 1;
+            nextInvoiceId = ids.nextInvoiceId || 1;
+            nextSavingsId = ids.nextSavingsId || 1;
+            nextGoalId = ids.nextGoalId || 1;
+            document.getElementById('syncStatus').innerHTML = '✅ Dados carregados da nuvem';
+        } else {
+            // Primeiro acesso - criar dados padrão
+            transactions = [{ id: 1, desc: "Salário", amount: 5000, type: "income", category: "Salário", paymentMethod: "PIX", date: new Date().toISOString() }, { id: 2, desc: "Aluguel", amount: 1200, type: "expense", category: "Moradia", paymentMethod: "PIX", date: new Date().toISOString() }];
+            categories = [{ id: 1, name: "Alimentação", type: "expense" }, { id: 2, name: "Moradia", type: "expense" }, { id: 3, name: "Transporte", type: "expense" }, { id: 4, name: "Saúde", type: "expense" }, { id: 5, name: "Lazer", type: "expense" }, { id: 6, name: "Salário", type: "income" }, { id: 7, name: "Freelance", type: "income" }, { id: 8, name: "Vendas Loja", type: "income" }, { id: 9, name: "Poupança", type: "expense" }];
+            creditCards = [{ id: 1, name: "Nubank", limit: 5000, used: 1250, bank: "Nubank", closingDay: 10, dueDay: 5, statementBalance: 1250 }];
+            storeSales = [{ id: 1, desc: "Venda Camiseta", amount: 250, date: new Date().toISOString() }];
+            storeExpenses = [{ id: 1, desc: "Compra mercadoria", amount: 300, category: "Mercadoria", date: new Date().toISOString() }];
+            savings = [{ id: 1, name: "Reserva Emergência", amount: 5000, goal: 20000, color: "#EC4899", createdAt: new Date().toISOString() }, { id: 2, name: "Viagem", amount: 1200, goal: 5000, color: "#06B6D4", createdAt: new Date().toISOString() }];
+            financialGoals = [{ id: 1, name: "Comprar Carro", targetAmount: 50000, currentAmount: 10000, deadline: "2026-12-31", color: "#F97316", createdAt: new Date().toISOString() }];
+            await saveToFirebase();
+            document.getElementById('syncStatus').innerHTML = '✅ Dados sincronizados';
+        }
+        isSyncing = false;
+        refreshAllViews();
+    } catch (error) {
+        console.error('Erro ao carregar:', error);
+        document.getElementById('syncStatus').innerHTML = '⚠️ Erro ao carregar dados';
+        isSyncing = false;
+    }
+}
+
+// ==================== FUNÇÕES DE AUTENTICAÇÃO ====================
+window.toggleLoginPassword = () => { togglePassword('loginPassword'); };
+window.toggleRegisterPassword = () => { togglePassword('registerPassword'); };
+window.toggleRegisterConfirmPassword = () => { togglePassword('registerConfirmPassword'); };
+function togglePassword(id) {
+    const input = document.getElementById(id);
+    if (input.type === 'password') { input.type = 'text'; } else { input.type = 'password'; }
+}
+
+document.getElementById('btnShowRegister')?.addEventListener('click', () => {
+    document.getElementById('loginForm').style.display = 'none';
+    document.getElementById('registerForm').style.display = 'block';
+    document.getElementById('loginError').innerHTML = '';
+    document.getElementById('registerError').innerHTML = '';
+    document.getElementById('registerSuccess').innerHTML = '';
+});
+
+document.getElementById('btnBackToLogin')?.addEventListener('click', () => {
+    document.getElementById('loginForm').style.display = 'block';
+    document.getElementById('registerForm').style.display = 'none';
+    document.getElementById('loginError').innerHTML = '';
+    document.getElementById('registerError').innerHTML = '';
+    document.getElementById('registerSuccess').innerHTML = '';
+});
+
+document.getElementById('btnLogin')?.addEventListener('click', async () => {
+    const email = document.getElementById('loginEmail').value;
+    const password = document.getElementById('loginPassword').value;
+    const errorDiv = document.getElementById('loginError');
+    
+    if (!email || !password) {
+        errorDiv.innerText = 'Preencha e-mail e senha';
+        return;
+    }
+    
+    try {
+        const result = await auth.signInWithEmailAndPassword(email, password);
+        currentUser = result.user;
+        document.getElementById('userEmail').innerText = currentUser.email;
+        document.getElementById('loginContainer').classList.add('hide');
+        document.getElementById('appContainer').classList.add('show');
+        await loadFromFirebase();
+    } catch (error) {
+        console.error(error);
+        if (error.code === 'auth/user-not-found') errorDiv.innerText = 'Usuário não encontrado';
+        else if (error.code === 'auth/wrong-password') errorDiv.innerText = 'Senha incorreta';
+        else if (error.code === 'auth/invalid-email') errorDiv.innerText = 'E-mail inválido';
+        else errorDiv.innerText = 'Erro ao fazer login: ' + error.message;
+    }
+});
+
+document.getElementById('btnRegister')?.addEventListener('click', async () => {
+    const email = document.getElementById('registerEmail').value;
+    const password = document.getElementById('registerPassword').value;
+    const confirm = document.getElementById('registerConfirmPassword').value;
+    const errorDiv = document.getElementById('registerError');
+    const successDiv = document.getElementById('registerSuccess');
+    
+    if (!email || !password) {
+        errorDiv.innerText = 'Preencha e-mail e senha';
+        return;
+    }
+    if (password !== confirm) {
+        errorDiv.innerText = 'As senhas não coincidem';
+        return;
+    }
+    if (password.length < 6) {
+        errorDiv.innerText = 'A senha deve ter pelo menos 6 caracteres';
+        return;
+    }
+    
+    try {
+        const result = await auth.createUserWithEmailAndPassword(email, password);
+        currentUser = result.user;
+        document.getElementById('userEmail').innerText = currentUser.email;
+        successDiv.innerText = 'Conta criada com sucesso!';
+        errorDiv.innerHTML = '';
+        // Criar dados iniciais
+        await saveToFirebase();
+        setTimeout(() => {
+            document.getElementById('loginContainer').classList.add('hide');
+            document.getElementById('appContainer').classList.add('show');
+            loadFromFirebase();
+        }, 1500);
+    } catch (error) {
+        console.error(error);
+        if (error.code === 'auth/email-already-in-use') errorDiv.innerText = 'E-mail já cadastrado';
+        else if (error.code === 'auth/invalid-email') errorDiv.innerText = 'E-mail inválido';
+        else errorDiv.innerText = 'Erro ao criar conta: ' + error.message;
+        successDiv.innerHTML = '';
+    }
+});
+
+document.getElementById('logoutBtn')?.addEventListener('click', async () => {
+    await auth.signOut();
+    currentUser = null;
+    document.getElementById('loginContainer').classList.remove('hide');
+    document.getElementById('appContainer').classList.remove('show');
+    document.getElementById('loginEmail').value = '';
+    document.getElementById('loginPassword').value = '';
+});
+
+document.getElementById('changePasswordSecurityBtn')?.addEventListener('click', async () => {
+    if (!currentUser) return;
+    const novaSenha = prompt('Digite a nova senha (mínimo 6 caracteres)');
+    if (novaSenha && novaSenha.length >= 6) {
+        try {
+            await currentUser.updatePassword(novaSenha);
+            alert('Senha alterada com sucesso!');
+        } catch (error) {
+            alert('Erro ao alterar senha: ' + error.message);
+        }
+    } else if (novaSenha) {
+        alert('A senha deve ter pelo menos 6 caracteres');
+    }
+});
+
+// Verificar se já está logado
+auth.onAuthStateChanged(async (user) => {
+    if (user) {
+        currentUser = user;
+        document.getElementById('userEmail').innerText = currentUser.email;
+        document.getElementById('loginContainer').classList.add('hide');
+        document.getElementById('appContainer').classList.add('show');
+        await loadFromFirebase();
+    }
+});
+
+// ==================== FUNÇÕES DO APP (COM AUTO-SAVE) ====================
+function saveData() { 
+    saveToFirebase(); 
 }
 
 function getTotals() { let inc = 0, exp = 0; transactions.forEach(t => { if (t.type === 'income') inc += t.amount; else exp += t.amount; }); let cardDebt = creditCards.reduce((s, c) => s + (c.used || 0), 0); let totalSavings = savings.reduce((s, c) => s + (c.amount || 0), 0); let storeProfit = storeSales.reduce((s, v) => s + v.amount, 0) - storeExpenses.reduce((s, v) => s + v.amount, 0); let totalGoals = financialGoals.reduce((s, g) => s + (g.currentAmount || 0), 0); let balance = cashBalance + pixBalance + totalSavings + storeProfit - cardDebt; return { inc, exp, balance, cardDebt, totalSavings, storeProfit, totalGoals }; }
@@ -310,37 +481,9 @@ function updateGoal(id, name, targetAmount, currentAmount, deadline, color) { le
 function deleteGoal(id) { if (confirm('Excluir meta?')) { financialGoals = financialGoals.filter(g => g.id !== id); refreshAllViews(); } }
 
 // FUNÇÕES DE POUPANÇA
-function addSavings(name, amount, goal, color) { 
-    if (!name) { alert('Digite o nome da poupança'); return false; } 
-    savings.push({ 
-        id: nextSavingsId++, 
-        name: name, 
-        amount: amount || 0, 
-        goal: (goal && goal > 0) ? goal : null, 
-        color: color || "#EC4899", 
-        createdAt: new Date().toISOString() 
-    }); 
-    refreshAllViews(); 
-    return true; 
-}
-
-function updateSavings(id, name, amount, goal, color) { 
-    let s = savings.find(s => s.id === id); 
-    if (s) { 
-        s.name = name; 
-        s.amount = amount || 0; 
-        s.goal = (goal && goal > 0) ? goal : null; 
-        s.color = color; 
-        refreshAllViews(); 
-    } 
-}
-
-function deleteSavings(id) { 
-    if (confirm('Tem certeza que deseja excluir esta poupança?')) { 
-        savings = savings.filter(s => s.id !== id); 
-        refreshAllViews(); 
-    } 
-}
+function addSavings(name, amount, goal, color) { if (!name) { alert('Digite o nome da poupança'); return false; } savings.push({ id: nextSavingsId++, name, amount: amount || 0, goal: (goal && goal > 0) ? goal : null, color: color || "#EC4899", createdAt: new Date().toISOString() }); refreshAllViews(); return true; }
+function updateSavings(id, name, amount, goal, color) { let s = savings.find(s => s.id === id); if (s) { s.name = name; s.amount = amount || 0; s.goal = (goal && goal > 0) ? goal : null; s.color = color; refreshAllViews(); } }
+function deleteSavings(id) { if (confirm('Tem certeza que deseja excluir esta poupança?')) { savings = savings.filter(s => s.id !== id); refreshAllViews(); } }
 
 function registerMovement(desc, amount, type, category, paymentMethod, cardId = null, parcelData = null, photoBase64 = null) {
     if (!desc || amount <= 0) { alert('Preencha descrição e valor'); return false; }
@@ -426,16 +569,12 @@ function transferBetweenAccounts(fromType, toType, amount, desc, fromCardId = nu
 function exportToExcel() { let data = transactions.map(t => ({ 'Data': new Date(t.date).toLocaleString(), 'Descrição': t.desc, 'Tipo': t.type === 'income' ? 'Receita' : (t.type === 'expense' ? 'Despesa' : 'Transferência'), 'Categoria': t.category || '-', 'Forma de Pagamento': t.paymentMethod || '-', 'Valor': t.amount })); let ws = XLSX.utils.json_to_sheet(data); let wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, 'Movimentações'); XLSX.writeFile(wb, `financeiro_jean_${new Date().toISOString().split('T')[0]}.xlsx`); alert('✅ Excel exportado!'); }
 function exportToGoogleSheets() { let headers = ['Data', 'Descrição', 'Tipo', 'Categoria', 'Forma de Pagamento', 'Valor']; let rows = transactions.map(t => [new Date(t.date).toLocaleString(), t.desc, t.type === 'income' ? 'Receita' : (t.type === 'expense' ? 'Despesa' : 'Transferência'), t.category || '-', t.paymentMethod || '-', t.amount]); let csv = [headers, ...rows].map(row => row.join(',')).join('\n'); let blob = new Blob(["\uFEFF" + csv], { type: 'text/csv;charset=utf-8' }); let a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `financeiro_jean_${new Date().toISOString().split('T')[0]}.csv`; a.click(); alert('✅ CSV exportado! Importe no Google Sheets.'); }
 
-// ==================== FOTO (APENAS GALERIA) ====================
+// ==================== FOTO ====================
 function escolherFoto() {
     const input = document.createElement('input');
     input.type = 'file';
     input.accept = 'image/*';
-    input.onchange = (e) => {
-        if (e.target.files && e.target.files[0]) {
-            processarFoto(e.target.files[0]);
-        }
-    };
+    input.onchange = (e) => { if (e.target.files && e.target.files[0]) processarFoto(e.target.files[0]); };
     input.click();
 }
 function processarFoto(file) {
@@ -449,7 +588,6 @@ function processarFoto(file) {
         preview.style.display = 'block';
         alert('✅ Foto adicionada com sucesso!');
     };
-    reader.onerror = function() { alert('❌ Erro ao ler a foto.'); };
     reader.readAsDataURL(file);
 }
 function removerFoto() { currentPhotoBase64 = null; document.getElementById('photoPreview').style.display = 'none'; document.getElementById('cupomImage').src = ''; }
@@ -499,48 +637,15 @@ function refreshAllViews() {
     // POUPANÇAS
     let savDiv = document.getElementById('savingsList'); 
     if (savDiv) { 
-        if (savings.length === 0) {
-            savDiv.innerHTML = '<div style="text-align:center;padding:20px;">Nenhuma poupança criada</div>'; 
-        } else { 
-            savDiv.innerHTML = savings.map(s => { 
-                let percent = (s.goal && s.goal > 0) ? (s.amount / s.goal) * 100 : 0;
-                let goalText = (s.goal && s.goal > 0) ? `🎯 Objetivo: ${formatMoney(s.goal)}` : '🎯 Sem objetivo definido';
-                return `<div class="savings-card" style="border-left:3px solid ${s.color};">
-                    <div style="display:flex;justify-content:space-between; align-items:center;">
-                        <div><strong>${escapeHtml(s.name)}</strong></div>
-                        <div style="display:flex; gap:8px;">
-                            <button class="edit-savings" data-id="${s.id}" style="background:#3B82F6; padding:6px 12px; border-radius:20px;">✏️ Editar</button>
-                            <button class="delete-savings" data-id="${s.id}" style="background:#F43F5E; padding:6px 12px; border-radius:20px;">🗑️ Excluir</button>
-                        </div>
-                    </div>
-                    <div>💰 Saldo: ${formatMoney(s.amount || 0)}</div>
-                    <div>${goalText}</div>
-                    ${(s.goal && s.goal > 0) ? `<div class="progress-bar"><div class="progress-fill" style="width:${Math.min(percent, 100)}%; background:${s.color};"></div></div><div>📊 ${percent.toFixed(1)}% concluído</div>` : ''}
-                </div>`; 
-            }).join(''); 
-        }
-        
-        document.querySelectorAll('.edit-savings').forEach(btn => btn.addEventListener('click', () => { 
-            let id = parseInt(btn.dataset.id); 
-            let s = savings.find(s => s.id === id); 
-            if (s) { 
-                document.getElementById('savingsModalTitle').innerHTML = '✏️ EDITAR POUPANÇA'; 
-                document.getElementById('savingsName').value = s.name; 
-                document.getElementById('savingsAmount').value = s.amount; 
-                document.getElementById('savingsGoal').value = s.goal || ''; 
-                document.getElementById('savingsColor').value = s.color; 
-                document.getElementById('savingsEditId').value = s.id; 
-                document.getElementById('savingsModal').classList.remove('hide'); 
-            } 
-        })); 
-        
-        document.querySelectorAll('.delete-savings').forEach(btn => btn.addEventListener('click', () => deleteSavings(parseInt(btn.dataset.id)))); 
-    }
+        if (savings.length === 0) { savDiv.innerHTML = '<div style="text-align:center;padding:20px;">Nenhuma poupança criada</div>'; } 
+        else { savDiv.innerHTML = savings.map(s => { let percent = (s.goal && s.goal > 0) ? (s.amount / s.goal) * 100 : 0; let goalText = (s.goal && s.goal > 0) ? `🎯 Objetivo: ${formatMoney(s.goal)}` : '🎯 Sem objetivo definido'; return `<div class="savings-card" style="border-left:3px solid ${s.color};"><div style="display:flex;justify-content:space-between; align-items:center;"><div><strong>${escapeHtml(s.name)}</strong></div><div style="display:flex; gap:8px;"><button class="edit-savings" data-id="${s.id}" style="background:#3B82F6; padding:6px 12px; border-radius:20px;">✏️ Editar</button><button class="delete-savings" data-id="${s.id}" style="background:#F43F5E; padding:6px 12px; border-radius:20px;">🗑️ Excluir</button></div></div><div>💰 Saldo: ${formatMoney(s.amount || 0)}</div><div>${goalText}</div>${(s.goal && s.goal > 0) ? `<div class="progress-bar"><div class="progress-fill" style="width:${Math.min(percent, 100)}%; background:${s.color};"></div></div><div>📊 ${percent.toFixed(1)}% concluído</div>` : ''}</div>`; }).join(''); } }
+    document.querySelectorAll('.edit-savings').forEach(btn => btn.addEventListener('click', () => { let id = parseInt(btn.dataset.id); let s = savings.find(s => s.id === id); if (s) { document.getElementById('savingsModalTitle').innerHTML = '✏️ EDITAR POUPANÇA'; document.getElementById('savingsName').value = s.name; document.getElementById('savingsAmount').value = s.amount; document.getElementById('savingsGoal').value = s.goal || ''; document.getElementById('savingsColor').value = s.color; document.getElementById('savingsEditId').value = s.id; document.getElementById('savingsModal').classList.remove('hide'); } })); 
+    document.querySelectorAll('.delete-savings').forEach(btn => btn.addEventListener('click', () => deleteSavings(parseInt(btn.dataset.id)))); 
 
     // METAS
     let goalsDiv = document.getElementById('goalsList'); if (goalsDiv) { if (financialGoals.length === 0) goalsDiv.innerHTML = '<div style="text-align:center;padding:20px;">Nenhuma meta cadastrada</div>'; else goalsDiv.innerHTML = financialGoals.map(g => { let percent = (g.currentAmount / g.targetAmount) * 100; let daysLeft = g.deadline ? Math.ceil((new Date(g.deadline) - new Date()) / (1000 * 60 * 60 * 24)) : null; return `<div class="goal-card" style="border-left:3px solid ${g.color};"><div style="display:flex;justify-content:space-between;"><div><strong>🎯 ${escapeHtml(g.name)}</strong></div><div><button class="edit-goal" data-id="${g.id}" style="background:#3B82F6;">✏️</button><button class="delete-goal" data-id="${g.id}" style="background:#F43F5E;">🗑️</button></div></div><div>💰 Atual: ${formatMoney(g.currentAmount)} de ${formatMoney(g.targetAmount)}</div><div class="progress-bar"><div class="progress-fill" style="width:${Math.min(percent, 100)}%; background:${g.color};"></div></div><div>📊 ${percent.toFixed(1)}% concluída</div>${daysLeft !== null ? `<div>⏰ ${daysLeft} dias restantes</div>` : ''}</div>`; }).join('');
-        document.querySelectorAll('.edit-goal').forEach(btn => btn.addEventListener('click', () => { let id = parseInt(btn.dataset.id); let g = financialGoals.find(g => g.id === id); if (g) { document.getElementById('goalModalTitle').innerHTML = '✏️ EDITAR META'; document.getElementById('goalName').value = g.name; document.getElementById('goalTarget').value = g.targetAmount; document.getElementById('goalCurrent').value = g.currentAmount; document.getElementById('goalDeadline').value = g.deadline || ''; document.getElementById('goalColor').value = g.color; document.getElementById('goalEditId').value = g.id; document.getElementById('goalModal').classList.remove('hide'); } }));
-        document.querySelectorAll('.delete-goal').forEach(btn => btn.addEventListener('click', () => deleteGoal(parseInt(btn.dataset.id)))); }
+    document.querySelectorAll('.edit-goal').forEach(btn => btn.addEventListener('click', () => { let id = parseInt(btn.dataset.id); let g = financialGoals.find(g => g.id === id); if (g) { document.getElementById('goalModalTitle').innerHTML = '✏️ EDITAR META'; document.getElementById('goalName').value = g.name; document.getElementById('goalTarget').value = g.targetAmount; document.getElementById('goalCurrent').value = g.currentAmount; document.getElementById('goalDeadline').value = g.deadline || ''; document.getElementById('goalColor').value = g.color; document.getElementById('goalEditId').value = g.id; document.getElementById('goalModal').classList.remove('hide'); } }));
+    document.querySelectorAll('.delete-goal').forEach(btn => btn.addEventListener('click', () => deleteGoal(parseInt(btn.dataset.id)))); }
 
     // MOVIMENTAÇÕES
     let recentDiv = document.getElementById('recentMovementsList'); if (recentDiv) recentDiv.innerHTML = [...transactions].sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 10).map(t => `<div class="tx-item" style="border-left-color:${t.type === 'income' ? '#10B981' : (t.type === 'expense' ? '#F43F5E' : '#FBBF24')}"><div><strong>${escapeHtml(t.desc)}</strong><div style="font-size:0.6rem;">${new Date(t.date).toLocaleString()} | ${t.paymentMethod || '-'}</div></div><div>${t.type === 'income' ? '+' : (t.type === 'expense' ? '-' : '↺')} ${formatMoney(t.amount)}</div></div>`).join('');
@@ -550,8 +655,8 @@ function refreshAllViews() {
 
     // CARTÕES
     let cardsDiv = document.getElementById('creditCardsList'); if (cardsDiv) { if (creditCards.length === 0) cardsDiv.innerHTML = '<div style="text-align:center;padding:20px;">Nenhum cartão</div>'; else cardsDiv.innerHTML = creditCards.map(card => { let percent = (card.used / card.limit) * 100; let statementPercent = card.statementBalance ? (card.statementBalance / card.limit) * 100 : 0; let stat = ''; if (statementPercent > 80) stat = '<span class="badge-danger">⚠️ Fatura alta!</span>'; else if (statementPercent > 50) stat = '<span class="badge-warning">⚠️ Atenção</span>'; else stat = '<span class="badge-success">✅ Controlada</span>'; return `<div class="card-item"><div><strong>💳 ${escapeHtml(card.name)}</strong> ${card.bank ? `(${escapeHtml(card.bank)})` : ''}</div><div>Limite: ${formatMoney(card.limit)} | Usado: ${formatMoney(card.used)} | Livre: ${formatMoney(card.limit - card.used)}</div><div class="progress-bar"><div class="progress-fill" style="width:${Math.min(percent, 100)}%; background:${percent > 80 ? '#F43F5E' : percent > 50 ? '#FBBF24' : '#10B981'};"></div></div><div>📅 Fecha: dia ${card.closingDay} | Vence: dia ${card.dueDay}</div><div>💳 Fatura: ${formatMoney(card.statementBalance || 0)} ${stat}</div><div class="flex-row"><input type="number" id="spend-${card.id}" placeholder="Valor do gasto" style="flex:2"><button class="spend-card" data-id="${card.id}">💸 Gastar</button><button class="delete-card" data-id="${card.id}">🗑️</button></div></div>`; }).join(''); 
-        document.querySelectorAll('.spend-card').forEach(btn => btn.addEventListener('click', () => { let id = parseInt(btn.dataset.id); let val = parseFloat(document.getElementById(`spend-${id}`).value); if (val > 0) { let card = creditCards.find(c => c.id === id); if (card) { let newUsed = (card.used || 0) + val; if (newUsed <= card.limit) { card.used = newUsed; transactions.push({ id: nextTransId++, desc: `Gasto cartão ${card.name}`, amount: val, type: "expense", category: "Compras", paymentMethod: "Crédito", date: new Date().toISOString() }); refreshAllViews(); saveData(); } else alert('Limite excedido'); } } })); 
-        document.querySelectorAll('.delete-card').forEach(btn => btn.addEventListener('click', () => { creditCards = creditCards.filter(c => c.id !== parseInt(btn.dataset.id)); refreshAllViews(); saveData(); })); }
+    document.querySelectorAll('.spend-card').forEach(btn => btn.addEventListener('click', () => { let id = parseInt(btn.dataset.id); let val = parseFloat(document.getElementById(`spend-${id}`).value); if (val > 0) { let card = creditCards.find(c => c.id === id); if (card) { let newUsed = (card.used || 0) + val; if (newUsed <= card.limit) { card.used = newUsed; transactions.push({ id: nextTransId++, desc: `Gasto cartão ${card.name}`, amount: val, type: "expense", category: "Compras", paymentMethod: "Crédito", date: new Date().toISOString() }); refreshAllViews(); saveData(); } else alert('Limite excedido'); } } })); 
+    document.querySelectorAll('.delete-card').forEach(btn => btn.addEventListener('click', () => { creditCards = creditCards.filter(c => c.id !== parseInt(btn.dataset.id)); refreshAllViews(); saveData(); })); }
 
     let invDiv = document.getElementById('invoicesList'); if (invDiv) { let pend = invoices.filter(i => i.status === 'pending'); if (pend.length === 0) invDiv.innerHTML = '<div style="text-align:center;padding:20px;">Nenhuma fatura aberta</div>'; else invDiv.innerHTML = pend.map(inv => { let card = creditCards.find(c => c.id === inv.cardId); let overdue = new Date(inv.dueDate) < new Date(); return `<div class="invoice-card"><div><strong>📄 Fatura ${card ? card.name : 'Cartão'}</strong> ${overdue ? '<span class="badge-danger">VENCIDA!</span>' : ''}</div><div>Valor: ${formatMoney(inv.amount)}</div><div>Vencimento: ${inv.dueDate}</div><div>Status: ${inv.status === 'pending' ? '🔴 Pendente' : '✅ Paga'}</div></div>`; }).join(''); }
 
@@ -573,11 +678,9 @@ function refreshAllViews() {
 function showView(view) { ['dashboard', 'register', 'history', 'savings', 'goals', 'cards', 'book', 'config'].forEach(v => { let el = document.getElementById(v + 'View'); if (el) el.style.display = v === view ? 'block' : 'none'; }); if (view === 'dashboard') updateAllCharts(); }
 
 function iniciarApp() {
-    loadData(); refreshAllViews(); showView('dashboard');
-    
+    refreshAllViews(); showView('dashboard');
     document.getElementById('photoGalleryBtn')?.addEventListener('click', escolherFoto);
     document.getElementById('removePhotoBtn')?.addEventListener('click', removerFoto);
-    
     document.getElementById('registerMovementBtn')?.addEventListener('click', () => {
         let desc = document.getElementById('regDesc').value, type = document.getElementById('regType').value, category = document.getElementById('regCategory').value, paymentMethod = document.getElementById('regPaymentMethod').value, cardId = document.getElementById('selectedCard').value ? parseInt(document.getElementById('selectedCard').value) : null;
         if (!category) { alert('Selecione uma categoria'); return; }
@@ -603,7 +706,6 @@ function iniciarApp() {
         }
         document.getElementById('regDesc').value = ''; document.getElementById('regCategory').value = ''; removerFoto();
     });
-    
     document.getElementById('registerTransferBtn')?.addEventListener('click', () => {
         let fromType = document.getElementById('transferFromType').value, toType = document.getElementById('transferToType').value, amount = parseFloat(document.getElementById('transferAmount').value), desc = document.getElementById('transferDesc').value;
         let fromCardId = null, toCardId = null, fromSavingsId = null, toSavingsId = null;
@@ -615,39 +717,12 @@ function iniciarApp() {
         transferBetweenAccounts(fromType, toType, amount, desc, fromCardId, toCardId, fromSavingsId, toSavingsId);
         document.getElementById('transferAmount').value = ''; document.getElementById('transferDesc').value = '';
     });
-    
-    // POUPANÇAS
-    document.getElementById('addSavingsBtn')?.addEventListener('click', () => { 
-        document.getElementById('savingsModalTitle').innerHTML = '➕ NOVA POUPANÇA'; 
-        document.getElementById('savingsName').value = ''; 
-        document.getElementById('savingsAmount').value = '0'; 
-        document.getElementById('savingsGoal').value = ''; 
-        document.getElementById('savingsColor').value = '#EC4899'; 
-        document.getElementById('savingsEditId').value = ''; 
-        document.getElementById('savingsModal').classList.remove('hide'); 
-    });
-    
-    document.getElementById('savingsModalSave')?.addEventListener('click', () => { 
-        let name = document.getElementById('savingsName').value; 
-        let amount = parseFloat(document.getElementById('savingsAmount').value) || 0; 
-        let goal = parseFloat(document.getElementById('savingsGoal').value) || null; 
-        let color = document.getElementById('savingsColor').value; 
-        let editId = document.getElementById('savingsEditId').value; 
-        if (editId) {
-            updateSavings(parseInt(editId), name, amount, goal, color); 
-        } else { 
-            addSavings(name, amount, goal, color); 
-        }
-        document.getElementById('savingsModal').classList.add('hide'); 
-    });
-    
+    document.getElementById('addSavingsBtn')?.addEventListener('click', () => { document.getElementById('savingsModalTitle').innerHTML = '➕ NOVA POUPANÇA'; document.getElementById('savingsName').value = ''; document.getElementById('savingsAmount').value = '0'; document.getElementById('savingsGoal').value = ''; document.getElementById('savingsColor').value = '#EC4899'; document.getElementById('savingsEditId').value = ''; document.getElementById('savingsModal').classList.remove('hide'); });
+    document.getElementById('savingsModalSave')?.addEventListener('click', () => { let name = document.getElementById('savingsName').value; let amount = parseFloat(document.getElementById('savingsAmount').value) || 0; let goal = parseFloat(document.getElementById('savingsGoal').value) || null; let color = document.getElementById('savingsColor').value; let editId = document.getElementById('savingsEditId').value; if (editId) updateSavings(parseInt(editId), name, amount, goal, color); else addSavings(name, amount, goal, color); document.getElementById('savingsModal').classList.add('hide'); });
     document.getElementById('savingsModalCancel')?.addEventListener('click', () => document.getElementById('savingsModal').classList.add('hide'));
-    
-    // METAS
     document.getElementById('addGoalBtn')?.addEventListener('click', () => { document.getElementById('goalModalTitle').innerHTML = '🎯 NOVA META'; document.getElementById('goalName').value = ''; document.getElementById('goalTarget').value = ''; document.getElementById('goalCurrent').value = '0'; document.getElementById('goalDeadline').value = ''; document.getElementById('goalColor').value = '#F97316'; document.getElementById('goalEditId').value = ''; document.getElementById('goalModal').classList.remove('hide'); });
     document.getElementById('goalModalSave')?.addEventListener('click', () => { let name = document.getElementById('goalName').value; let target = parseFloat(document.getElementById('goalTarget').value); let current = parseFloat(document.getElementById('goalCurrent').value) || 0; let deadline = document.getElementById('goalDeadline').value; let color = document.getElementById('goalColor').value; let editId = document.getElementById('goalEditId').value; if (editId) updateGoal(parseInt(editId), name, target, current, deadline, color); else addGoal(name, target, current, deadline, color); document.getElementById('goalModal').classList.add('hide'); });
     document.getElementById('goalModalCancel')?.addEventListener('click', () => document.getElementById('goalModal').classList.add('hide'));
-    
     document.getElementById('addCardBtn')?.addEventListener('click', addCreditCard);
     document.getElementById('addCategoryBtn')?.addEventListener('click', addNewCategory);
     document.getElementById('registerSaleBtn')?.addEventListener('click', () => registerSale(document.getElementById('saleDesc').value, parseFloat(document.getElementById('saleValue').value), document.getElementById('saleDate').value, document.getElementById('saleTime').value));
@@ -658,21 +733,10 @@ function iniciarApp() {
     document.getElementById('exportDataBtn')?.addEventListener('click', () => { let data = { transactions, futurePayments, creditCards, categories, activeInstallments, storeSales, storeExpenses, invoices, savings, financialGoals, cashBalance, pixBalance, ids: { nextTransId, nextFutureId, nextCardId, nextCategoryId, nextInstallmentId, nextSaleId, nextExpenseId, nextInvoiceId, nextSavingsId, nextGoalId } }; let a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })); a.download = `backup_${new Date().toISOString().split('T')[0]}.json`; a.click(); alert('Backup exportado!'); });
     document.getElementById('importDataBtn')?.addEventListener('click', () => document.getElementById('importFile').click());
     document.getElementById('importFile')?.addEventListener('change', (e) => { let file = e.target.files[0]; if (!file) return; let reader = new FileReader(); reader.onload = (ev) => { try { let data = JSON.parse(ev.target.result); transactions = data.transactions || []; futurePayments = data.futurePayments || []; creditCards = data.creditCards || []; categories = data.categories || []; activeInstallments = data.activeInstallments || []; storeSales = data.storeSales || []; storeExpenses = data.storeExpenses || []; invoices = data.invoices || []; savings = data.savings || []; financialGoals = data.financialGoals || []; cashBalance = data.cashBalance !== undefined ? data.cashBalance : 5000; pixBalance = data.pixBalance !== undefined ? data.pixBalance : 3000; let ids = data.ids || {}; nextTransId = ids.nextTransId || 1; nextFutureId = ids.nextFutureId || 1; nextCardId = ids.nextCardId || 1; nextCategoryId = ids.nextCategoryId || 9; nextInstallmentId = ids.nextInstallmentId || 1; nextSaleId = ids.nextSaleId || 1; nextExpenseId = ids.nextExpenseId || 1; nextInvoiceId = ids.nextInvoiceId || 1; nextSavingsId = ids.nextSavingsId || 1; nextGoalId = ids.nextGoalId || 1; saveData(); refreshAllViews(); alert('Backup importado!'); } catch (err) { alert('Erro ao importar arquivo!'); } }; reader.readAsText(file); e.target.value = ''; });
-    
     document.getElementById('regPaymentMethod')?.addEventListener('change', function () { let parcelas = document.getElementById('parcelasArea'), normal = document.getElementById('normalValueArea'), cardSel = document.getElementById('cardSelectionArea'); if (this.value === 'Crédito parcelado') { parcelas.style.display = 'block'; normal.style.display = 'none'; cardSel.style.display = 'block'; } else if (this.value === 'Débito' || this.value === 'Crédito à vista') { parcelas.style.display = 'none'; normal.style.display = 'block'; cardSel.style.display = 'block'; } else { parcelas.style.display = 'none'; normal.style.display = 'block'; cardSel.style.display = 'none'; } });
     document.getElementById('transferFromType')?.addEventListener('change', function () { document.getElementById('transferCardFromArea').style.display = (this.value === 'Cartao') ? 'block' : 'none'; document.getElementById('transferSavingsFromArea').style.display = (this.value === 'Poupanca') ? 'block' : 'none'; });
     document.getElementById('transferToType')?.addEventListener('change', function () { document.getElementById('transferCardToArea').style.display = (this.value === 'Cartao') ? 'block' : 'none'; document.getElementById('transferSavingsToArea').style.display = (this.value === 'Poupanca') ? 'block' : 'none'; });
     document.getElementById('paymentTypeSelect')?.addEventListener('change', () => refreshAllViews());
-    document.getElementById('changePasswordSecurityBtn')?.addEventListener('click', () => { 
-        let nova = prompt('Digite a nova senha (mínimo 4 caracteres)'); 
-        if (nova && nova.length >= 4) { 
-            localStorage.setItem('jean_password', btoa(nova)); 
-            alert('Senha alterada com sucesso!'); 
-        } else if (nova) { 
-            alert('Senha deve ter pelo menos 4 caracteres'); 
-        } 
-    });
-    document.getElementById('logoutBtn')?.addEventListener('click', () => { document.getElementById('loginContainer').classList.remove('hide'); document.getElementById('appContainer').classList.remove('show'); document.getElementById('loginPassword').value = ''; });
     document.getElementById('hamburgerBtn')?.addEventListener('click', () => document.getElementById('menuOverlay').classList.add('open'));
     document.getElementById('closeMenuBtn')?.addEventListener('click', () => document.getElementById('menuOverlay').classList.remove('open'));
     document.getElementById('menuBackdrop')?.addEventListener('click', () => document.getElementById('menuOverlay').classList.remove('open'));
@@ -680,6 +744,11 @@ function iniciarApp() {
     let today = new Date().toISOString().split('T')[0];
     if (document.getElementById('saleDate')) document.getElementById('saleDate').value = today;
     if (document.getElementById('expenseDate')) document.getElementById('expenseDate').value = today;
+}
+
+// Se o usuário já estiver logado, inicia o app
+if (currentUser) {
+    iniciarApp();
 }
 </script>
 </body>
